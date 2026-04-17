@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>米米童著 ｜ LINE 發送控制台</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a6330;
+    --text: #f0ead8;
+    --text-muted: #888;
+    --text-dim: #555;
+    --green: #4caf82;
+    --green-bg: #0d2018;
+    --red: #e05c5c;
+    --red-bg: #1f0d0d;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 0.5px;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .settings-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .settings-btn:hover { border-color: var(--gold-dim); color: var(--gold-light); }
+
+  /* ── Settings Panel ── */
+  .settings-panel {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: none;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .settings-panel.open { display: flex; }
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 220px;
+  }
+  .field-group label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .field-group input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .field-group input:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+  }
+  .save-btn {
+    background: var(--gold);
+    color: #1a1200;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    align-self: flex-end;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .save-btn:hover { background: var(--gold-light); }
+
+  /* ── Main Layout ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    height: calc(100vh - 57px);
+  }
+
+  /* ── Left: Product List ── */
+  .product-area {
+    padding: 20px 24px;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .cat-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .cat-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .cat-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .cat-btn.active {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+  .toolbar-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .sel-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .sel-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .count-badge {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .search-bar {
+    margin-bottom: 14px;
+  }
+  .search-bar input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 14px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .search-bar input:focus { outline: none; border-color: var(--gold-dim); }
+  .search-bar input::placeholder { color: var(--text-dim); }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 8px;
+  }
+
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    user-select: none;
+  }
+  .product-card:hover {
+    border-color: var(--gold-dim);
+    background: var(--surface2);
+  }
+  .product-card.selected {
+    border-color: var(--gold);
+    background: #1e1800;
+  }
+  .card-check {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .product-card.selected .card-check {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .check-mark {
+    width: 9px;
+    height: 6px;
+    border-left: 2px solid #1a1200;
+    border-bottom: 2px solid #1a1200;
+    transform: rotate(-45deg) translateY(-1px);
+    display: none;
+  }
+  .product-card.selected .check-mark { display: block; }
+
+  .card-img-wrap {
+    width: 100%;
+    height: 100px;
+    background: var(--surface2);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    border: 1px solid var(--border);
+  }
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .card-code { font-size: 10px; color: var(--text-dim); margin-bottom: 2px; }
+  .card-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-price { font-size: 13px; font-weight: 700; color: var(--gold); }
+  .card-cat {
+    font-size: 10px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .card-sizes {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Right: Send Panel ── */
+  .send-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .panel-section {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-title {
+    font-size: 11px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .selected-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 18px;
+  }
+  .selected-empty {
+    color: var(--text-dim);
+    font-size: 13px;
+    text-align: center;
+    padding: 20px 0;
+  }
+  .selected-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .selected-item:last-child { border-bottom: none; }
+  .selected-item-name {
+    font-size: 12px;
+    color: var(--text);
+    flex: 1;
+    min-width: 0;
+  }
+  .selected-item-code {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .selected-item-price {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .remove-btn:hover { color: var(--red); }
+
+  .mode-row {
+    display: flex;
+    gap: 8px;
+  }
+  .mode-btn {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 7px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .mode-btn.active {
+    background: #1e1800;
+    border-color: var(--gold);
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+
+  .note-wrap { margin-top: 10px; }
+  .note-wrap textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: inherit;
+    resize: none;
+    height: 70px;
+    transition: border-color 0.15s;
+  }
+  .note-wrap textarea:focus { outline: none; border-color: var(--gold-dim); }
+  .note-wrap textarea::placeholder { color: var(--text-dim); }
+
+  .send-actions {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .send-count-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .send-count-text span { color: var(--gold); font-weight: 700; }
+
+  .send-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    color: #1a1200;
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .send-btn:hover { filter: brightness(1.1); }
+  .send-btn:disabled {
+    background: var(--surface2);
+    color: var(--text-dim);
+    cursor: not-allowed;
+    filter: none;
+  }
+  .send-btn:active:not(:disabled) { transform: scale(0.98); }
+
+  .copy-btn {
+    width: 100%;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 9px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .copy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .result-msg {
+    font-size: 12px;
+    text-align: center;
+    min-height: 18px;
+    color: var(--green);
+  }
+  .result-msg.error { color: var(--red); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; height: auto; }
+    .send-panel { border-top: 1px solid var(--border); }
+    .product-area { height: 60vh; }
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">👗</div>
+    <div>
+      <div class="logo-text">哈摟米米</div>
+      <div class="logo-sub">LINE 發送控制台</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="settings-btn" onclick="toggleSettings()">⚙ 設定</button>
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="field-group">
+    <label>Channel Access Token</label>
+    <input type="password" id="lineToken" placeholder="貼上 LINE Token..." />
+  </div>
+  <div class="field-group">
+    <label>群組 ID（Group ID）</label>
+    <input type="text" id="groupId" placeholder="Cd98e3ae..." />
+  </div>
+  <div class="field-group" style="max-width:200px;">
+    <label>Google Sheet ID（選填）</label>
+    <input type="text" id="sheetId" placeholder="試算表 ID..." />
+  </div>
+  <button class="save-btn" onclick="saveSettings()">儲存設定</button>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Left: Products -->
+  <div class="product-area">
+    <div class="toolbar">
+      <div class="cat-filters" id="catFilters"></div>
+      <div class="toolbar-right">
+        <button class="sel-btn" onclick="selectAll()">全選</button>
+        <button class="sel-btn" onclick="clearAll()">清除</button>
+        <span class="count-badge" id="totalCount"></span>
+      </div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="搜尋商品名稱或編號..." oninput="renderGrid()" />
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+  </div>
+
+  <!-- Right: Send Panel -->
+  <div class="send-panel">
+    <div class="panel-section">
+      <div class="panel-title">發送模式</div>
+      <div class="mode-row">
+        <button class="mode-btn active" id="modeCarousel" onclick="setMode('carousel')">Carousel 卡片</button>
+        <button class="mode-btn" id="modeSingle" onclick="setMode('single')">純文字</button>
+      </div>
+    </div>
+
+    <div class="panel-section" style="padding-bottom:8px;">
+      <div class="panel-title">已選商品</div>
+    </div>
+    <div class="selected-list" id="selectedList">
+      <div class="selected-empty">尚未選取商品</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">附加說明</div>
+      <div class="note-wrap">
+        <textarea id="noteInput" placeholder="例：本週新品上架！數量有限，喜歡請把握 🛍"></textarea>
+      </div>
+    </div>
+
+    <div class="send-actions">
+      <div class="send-count-text" id="sendCountText">尚未選取商品</div>
+      <button class="send-btn" id="sendBtn" onclick="handleSend()" disabled>發送到 LINE 群組</button>
+      <button class="copy-btn" id="copyBtn" onclick="handleCopy()" disabled>📋 複製文字（貼到社群）</button>
+      <div class="result-msg" id="resultMsg"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Data ──
+const PRODUCTS = [
+  { code:'C0010', name:'基本百搭款 素色反摺短褲', price:'$120', sizes:'紫(淡紫):9/11, 白:9', cat:'女寶下身', imageUrl:'' },
+  { code:'C0011', name:'碎花雪紡百褶褲', price:'$100', sizes:'藍綠:9/15/17', cat:'女寶下身', imageUrl:'' },
+  { code:'C0012', name:'棉質休閒褲裙', price:'$120', sizes:'灰:5/9', cat:'女寶下身', imageUrl:'' },
+  { code:'C0036', name:'涼感 彈力短袖運動套裝', price:'$150', sizes:'左下深藍130', cat:'夏套裝', imageUrl:'' },
+  { code:'H0001', name:'涼感抗UV防曬外套', price:'$180', sizes:'卡其/白:110/120/130', cat:'外套', imageUrl:'' },
+  { code:'E0001', name:'純棉圓領短袖T恤', price:'$90', sizes:'白/灰/黑:100/110/120/130', cat:'上衣', imageUrl:'' },
+];
+
+let selected = new Set();
+let currentMode = 'carousel';
+let currentCat = '全部';
+
+// ── Settings ──
+function loadSettings() {
+  document.getElementById('lineToken').value = localStorage.getItem('lineToken') || '';
+  document.getElementById('groupId').value = localStorage.getItem('groupId') || '';
+  document.getElementById('sheetId').value = localStorage.getItem('sheetId') || '';
+}
+function saveSettings() {
+  localStorage.setItem('lineToken', document.getElementById('lineToken').value.trim());
+  localStorage.setItem('groupId', document.getElementById('groupId').value.trim());
+  localStorage.setItem('sheetId', document.getElementById('sheetId').value.trim());
+  showResult('✓ 設定已儲存', false);
+  document.getElementById('settingsPanel').classList.remove('open');
+}
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+// ── Render ──
+function getCats() {
+  return ['全部', ...new Set(PRODUCTS.map(p => p.cat))];
+}
+function renderCats() {
+  const el = document.getElementById('catFilters');
+  el.innerHTML = getCats().map(c =>
+    `<button class="cat-btn ${c===currentCat?'active':''}" onclick="filterCat('${c}')">${c}</button>`
+  ).join('');
+}
+function filterCat(cat) {
+  currentCat = cat;
+  renderCats();
+  renderGrid();
+}
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  return PRODUCTS.filter(p => {
+    const matchCat = currentCat === '全部' || p.cat === currentCat;
+    const matchQ = !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+}
+function renderGrid() {
+  const filtered = getFiltered();
+  document.getElementById('totalCount').textContent = `${filtered.length} 件`;
+  document.getElementById('productGrid').innerHTML = filtered.map(p => `
+    <div class="product-card ${selected.has(p.code)?'selected':''}" onclick="toggleCard('${p.code}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div class="card-check"><div class="check-mark"></div></div>
+        <span class="card-code">${p.code}</span>
+      </div>
+      <div class="card-img-wrap">
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" onerror="this.style.display='none'">` : '👗'}
+      </div>
+      <div class="card-name">${p.name}</div>
+      <div class="card-sizes">${p.sizes}</div>
+      <div class="card-bottom">
+        <span class="card-price">${p.price}</span>
+        <span class="card-cat">${p.cat}</span>
+      </div>
+    </div>
+  `).join('');
+}
+function renderSelectedList() {
+  const items = PRODUCTS.filter(p => selected.has(p.code));
+  const el = document.getElementById('selectedList');
+  if (items.length === 0) {
+    el.innerHTML = '<div class="selected-empty">尚未選取商品</div>';
+  } else {
+    el.innerHTML = items.map(p => `
+      <div class="selected-item">
+        <div style="flex:1;min-width:0;">
+          <div class="selected-item-code">${p.code}</div>
+          <div class="selected-item-name">${p.name}</div>
+        </div>
+        <span class="selected-item-price">${p.price}</span>
+        <button class="remove-btn" onclick="removeItem('${p.code}')">✕</button>
+      </div>
+    `).join('');
+  }
+  const n = selected.size;
+  document.getElementById('sendCountText').innerHTML = n === 0
+    ? '尚未選取商品'
+    : `已選取 <span>${n} 件</span>商品`;
+  document.getElementById('sendBtn').disabled = n === 0;
+  document.getElementById('copyBtn').disabled = n === 0;
+}
+
+// ── Interactions ──
+function toggleCard(code) {
+  if (selected.has(code)) selected.delete(code);
+  else selected.add(code);
+  renderGrid();
+  renderSelectedList();
+}
+function removeItem(code) {
+  selected.delete(code);
+  renderGrid();
+  renderSelectedList();
+}
+function selectAll() {
+  getFiltered().forEach(p => selected.add(p.code));
+  renderGrid();
+  renderSelectedList();
+}
+function clearAll() {
+  selected.clear();
+  renderGrid();
+  renderSelectedList();
+}
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeCarousel').classList.toggle('active', mode==='carousel');
+  document.getElementById('modeSingle').classList.toggle('active', mode==='single');
+}
+
+// ── Copy ──
+function buildText() {
+  const items = PRODUCTS.filter(p => selected.has(p.code));
+  const note = document.getElementById('noteInput').value.trim();
+  const today = new Date().toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
+  let text = `🛍 ${today} 新品上架\n\n`;
+  items.forEach(p => {
+    text += `【${p.code}】${p.name}\n`;
+    text += `💰 ${p.price}\n`;
+    text += `📏 現貨可喊尺寸：${p.sizes}\n\n`;
+  });
+  text += `喜歡的款式直接私訊貨號＋尺寸 ✉️\n現貨可當日出貨 🚀\n滿600免運（7-11/全家）｜滿800宅配免運\n也可北屯店取貨 📍`;
+  if (note) text += `\n\n${note}`;
+  return text;
+}
+function handleCopy() {
+  const text = buildText();
+  navigator.clipboard.writeText(text).then(() => {
+    showResult('✓ 已複製！貼到社群聊天室即可', false);
+  }).catch(() => {
+    showResult('✗ 複製失敗，請手動複製', true);
+  });
+}
+
+// ── Send ──
+function buildFlexCarousel(items, note) {
+  const today = new Date().toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
+  const bubbles = items.map(p => ({
+    type: 'bubble',
+    size: 'kilo',
+    hero: p.imageUrl ? {
+      type: 'image',
+      url: p.imageUrl,
+      size: 'full',
+      aspectRatio: '1:1',
+      aspectMode: 'cover'
+    } : undefined,
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'sm',
+      paddingAll: '14px',
+      contents: [
+        { type: 'text', text: p.code, size: 'xs', color: '#888888' },
+        { type: 'text', text: p.name, weight: 'bold', size: 'sm', wrap: true, color: '#333333' },
+        { type: 'text', text: p.price, size: 'lg', weight: 'bold', color: '#c9a84c' },
+        { type: 'text', text: `尺寸：${p.sizes}`, size: 'xs', color: '#888888', wrap: true }
+      ].filter(Boolean)
+    },
+    footer: {
+      type: 'box',
+      layout: 'vertical',
+      contents: [{
+        type: 'button',
+        action: { type: 'message', label: '我要訂購', text: `我要訂購 ${p.code} ${p.name}` },
+        style: 'primary',
+        color: '#c9a84c',
+        height: 'sm'
+      }]
+    }
+  }));
+
+  const header = note ? [{
+    type: 'bubble',
+    body: {
+      type: 'box', layout: 'vertical', justifyContent: 'center', paddingAll: '20px',
+      contents: [
+        { type: 'text', text: `🛍 ${today} 新品上架`, weight: 'bold', size: 'lg', wrap: true, color: '#333333' },
+        { type: 'text', text: note, size: 'sm', wrap: true, color: '#666666', margin: 'md' }
+      ]
+    }
+  }] : [];
+
+  return {
+    type: 'flex',
+    altText: `🛍 新品上架 ${items.length} 件商品`,
+    contents: { type: 'carousel', contents: [...header, ...bubbles] }
+  };
+}
+
+async function handleSend() {
+  const token = localStorage.getItem('lineToken');
+  const groupId = localStorage.getItem('groupId');
+  if (!token) {
+    showResult('✗ 請先在設定填入 LINE Token', true);
+    document.getElementById('settingsPanel').classList.add('open');
+    return;
+  }
+  const items = PRODUCTS.filter(p => selected.has(p.code));
+  const note = document.getElementById('noteInput').value.trim();
+  showResult('發送中...', false);
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    let msg;
+    if (currentMode === 'carousel') {
+      msg = buildFlexCarousel(items, note);
+    } else {
+      msg = { type: 'text', text: buildText() };
+    }
+
+    const endpoint = groupId
+      ? 'https://api.line.me/v2/bot/message/push'
+      : 'https://api.line.me/v2/bot/message/broadcast';
+    const body = groupId
+      ? { to: groupId, messages: [msg] }
+      : { messages: [msg] };
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+    showResult(`✓ 發送成功！${items.length} 件商品已推送到群組`, false);
+  } catch(e) {
+    showResult(`✗ 發送失敗：${e.message}`, true);
+  } finally {
+    document.getElementById('sendBtn').disabled = selected.size === 0;
+  }
+}
+
+function showResult(msg, isError) {
+  const el = document.getElementById('resultMsg');
+  el.textContent = msg;
+  el.className = 'result-msg' + (isError ? ' error' : '');
+}
+
+// ── Init ──
+loadSettings();
+renderCats();
+renderGrid();
+renderSelectedList();
+</script>
+</body>
+</html>
