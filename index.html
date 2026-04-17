@@ -536,8 +536,8 @@
     <input type="password" id="lineToken" placeholder="貼上 LINE Token..." />
   </div>
   <div class="field-group">
-    <label>群組 ID（Group ID）</label>
-    <input type="text" id="groupId" placeholder="Cd98e3ae..." />
+    <label>群組 ID（可填多個，用逗號分隔）</label>
+    <input type="text" id="groupId" placeholder="Cd98e3ae..., C1234abcd..." style="min-width:360px;" />
   </div>
   <div class="field-group" style="max-width:200px;">
     <label>Google Sheet ID（選填）</label>
@@ -810,7 +810,8 @@ function buildFlexCarousel(items, note) {
 
 async function handleSend() {
   const token = localStorage.getItem('lineToken');
-  const groupId = localStorage.getItem('groupId');
+  const groupIdRaw = localStorage.getItem('groupId') || '';
+  const groupIds = groupIdRaw.split(',').map(s => s.trim()).filter(Boolean);
   if (!token) {
     showResult('✗ 請先在設定填入 LINE Token', true);
     document.getElementById('settingsPanel').classList.add('open');
@@ -829,29 +830,30 @@ async function handleSend() {
       msg = { type: 'text', text: buildText() };
     }
 
-    const endpoint = groupId
-      ? 'https://api.line.me/v2/bot/message/push'
-      : 'https://api.line.me/v2/bot/message/broadcast';
-    const body = groupId
-      ? { to: groupId, messages: [msg] }
-      : { messages: [msg] };
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `HTTP ${res.status}`);
+    if (groupIds.length === 0) {
+      // Broadcast
+      const res = await fetch('https://api.line.me/v2/bot/message/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ messages: [msg] })
+      });
+      if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.message || `HTTP ${res.status}`); }
+    } else {
+      // Push to each group
+      const results = await Promise.all(groupIds.map(gid =>
+        fetch('https://api.line.me/v2/bot/message/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ to: gid, messages: [msg] })
+        }).then(async res => {
+          if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(`群組 ${gid.slice(0,8)}... 失敗：${err.message||res.status}`); }
+          return true;
+        })
+      ));
     }
-    showResult(`✓ 發送成功！${items.length} 件商品已推送到群組`, false);
+    showResult(`✓ 發送成功！${items.length} 件商品已推送到 ${groupIds.length || '所有好友'}`, false);
   } catch(e) {
-    showResult(`✗ 發送失敗：${e.message}`, true);
+    showResult(`✗ ${e.message}`, true);
   } finally {
     document.getElementById('sendBtn').disabled = selected.size === 0;
   }
