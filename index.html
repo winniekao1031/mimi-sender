@@ -832,19 +832,19 @@ async function handleSend() {
 
     if (groupIds.length === 0) {
       // Broadcast
-      const res = await fetch('https://api.line.me/v2/bot/message/broadcast', {
+      const res = await fetch('/api/line/broadcast', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ messages: [msg] })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, messages: [msg] })
       });
       if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.message || `HTTP ${res.status}`); }
     } else {
       // Push to each group
       const results = await Promise.all(groupIds.map(gid =>
-        fetch('https://api.line.me/v2/bot/message/push', {
+        fetch('/api/line/push', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ to: gid, messages: [msg] })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, groupId: gid, messages: [msg] })
         }).then(async res => {
           if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(`群組 ${gid.slice(0,8)}... 失敗：${err.message||res.status}`); }
           return true;
