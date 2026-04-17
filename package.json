@@ -1,0 +1,12 @@
+{
+  "name": "mimi-sender",
+  "version": "1.0.0",
+  "description": "哈摟米米 LINE 發送控制台",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
