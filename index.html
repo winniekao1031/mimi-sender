@@ -535,9 +535,18 @@
     <label>Channel Access Token</label>
     <input type="password" id="lineToken" placeholder="貼上 LINE Token..." />
   </div>
-  <div class="field-group">
-    <label>群組 ID（可填多個，用逗號分隔）</label>
-    <input type="text" id="groupId" placeholder="Cd98e3ae..., C1234abcd..." style="min-width:360px;" />
+  <div class="field-group" style="min-width:280px;">
+    <label>發送群組</label>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);text-transform:none;letter-spacing:0;">
+        <input type="checkbox" id="grp1" value="Cf6b6f9c9dab5a98f9f9db1fabdaa7c49" style="width:16px;height:16px;cursor:pointer;" checked>
+        Olie Baby
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);text-transform:none;letter-spacing:0;">
+        <input type="checkbox" id="grp2" value="Cd98e3ae74aa692ef268cfc7a8308c557" style="width:16px;height:16px;cursor:pointer;" checked>
+        cutie 的服裝小舖
+      </label>
+    </div>
   </div>
   <div class="field-group" style="max-width:200px;">
     <label>Google Sheet ID（選填）</label>
@@ -665,12 +674,12 @@ let currentCat = '全部';
 // ── Settings ──
 function loadSettings() {
   document.getElementById('lineToken').value = localStorage.getItem('lineToken') || '';
-  document.getElementById('groupId').value = localStorage.getItem('groupId') || '';
+
   document.getElementById('sheetId').value = localStorage.getItem('sheetId') || '';
 }
 function saveSettings() {
   localStorage.setItem('lineToken', document.getElementById('lineToken').value.trim());
-  localStorage.setItem('groupId', document.getElementById('groupId').value.trim());
+
   localStorage.setItem('sheetId', document.getElementById('sheetId').value.trim());
   showResult('✓ 設定已儲存', false);
   document.getElementById('settingsPanel').classList.remove('open');
@@ -862,8 +871,11 @@ function buildFlexCarousel(items, note) {
 
 async function handleSend() {
   const token = localStorage.getItem('lineToken');
-  const groupIdRaw = localStorage.getItem('groupId') || '';
-  const groupIds = groupIdRaw.split(',').map(s => s.trim()).filter(Boolean);
+  // 讀取勾選的群組
+  const groupIds = [];
+  document.querySelectorAll('#grp1, #grp2').forEach(cb => {
+    if (cb.checked) groupIds.push(cb.value);
+  });
   if (!token) {
     showResult('✗ 請先在設定填入 LINE Token', true);
     document.getElementById('settingsPanel').classList.add('open');
