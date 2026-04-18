@@ -12,7 +12,7 @@ const AUTH_PASS = process.env.AUTH_PASS || 'hellomimi2024';
 function checkAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Basic ')) {
-    res.set('WWW-Authenticate', 'Basic realm="哈摟米米控制台"');
+    res.set('WWW-Authenticate', 'Basic realm="Mimi Control Panel"');
     return res.status(401).send('請輸入帳號密碼');
   }
   const base64 = authHeader.slice(6);
@@ -20,7 +20,7 @@ function checkAuth(req, res, next) {
   if (user === AUTH_USER && pass === AUTH_PASS) {
     return next();
   }
-  res.set('WWW-Authenticate', 'Basic realm="哈摟米米控制台"');
+  res.set('WWW-Authenticate', 'Basic realm="Mimi Control Panel"');
   return res.status(401).send('帳號或密碼錯誤');
 }
 
