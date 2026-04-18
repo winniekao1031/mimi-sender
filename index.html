@@ -830,7 +830,11 @@ function buildFlexCarousel(items, note) {
       layout: 'vertical',
       contents: [{
         type: 'button',
-        action: { type: 'uri', label: '我要訂購', uri: 'https://line.me/ti/p/~chami_1031' },
+        action: {
+          type: 'uri',
+          label: '我要訂購',
+          uri: `https://line.me/ti/p/~chami_1031?oat_content=msg&oat_msg=${encodeURIComponent('我要訂購 ' + p.code + ' ' + p.name)}`
+        },
         style: 'primary',
         color: '#c9a84c',
         height: 'sm'
