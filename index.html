@@ -695,6 +695,26 @@
     </div>
 
     <div class="panel-section">
+      <div class="panel-title">顏色設定</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;color:var(--text-muted);">按鈕顏色</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="color" id="btnColor" value="#c9a84c" style="width:36px;height:28px;border:none;border-radius:4px;cursor:pointer;background:none;padding:0;">
+            <span id="btnColorText" style="font-size:11px;color:var(--text-dim);">#c9a84c</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;color:var(--text-muted);">價錢顏色</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="color" id="priceColor" value="#c9a84c" style="width:36px;height:28px;border:none;border-radius:4px;cursor:pointer;background:none;padding:0;">
+            <span id="priceColorText" style="font-size:11px;color:var(--text-dim);">#c9a84c</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
       <div class="panel-title">附加說明</div>
       <div class="note-wrap">
         <textarea id="noteInput" placeholder="例：本週新品上架！數量有限，喜歡請把握 🛍"></textarea>
@@ -705,6 +725,7 @@
       <div class="send-count-text" id="sendCountText">尚未選取商品</div>
       <button class="send-btn" id="sendBtn" onclick="handleSend()" disabled>發送到 LINE 群組</button>
       <button class="copy-btn" id="copyBtn" onclick="handleCopy()" disabled>📋 複製文字（貼到社群）</button>
+      <button class="copy-btn" onclick="clearAll()" style="color:var(--red);border-color:var(--red-bg);">✕ 清空已選商品</button>
       <div class="result-msg" id="resultMsg"></div>
     </div>
   </div>
@@ -892,14 +913,13 @@ function setMode(mode) {
 function buildText() {
   const items = PRODUCTS.filter(p => selected.has(p.code));
   const note = document.getElementById('noteInput').value.trim();
-  const today = new Date().toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
-  let text = `🛍 ${today} 新品上架\n\n`;
-  items.forEach(p => {
+  let text = '';
+  items.forEach((p, idx) => {
+    if (idx > 0) text += '\n\n';
     text += `【${p.code}】${p.name}\n`;
     text += `💰 ${p.price}\n`;
-    text += `📏 現貨可喊尺寸：${p.sizes}\n\n`;
+    text += `📏 現貨可喊尺寸：${p.sizes}`;
   });
-  text += `喜歡的款式直接私訊貨號＋尺寸 ✉️\n現貨可當日出貨 🚀\n滿600免運（7-11/全家）｜滿800宅配免運\n也可北屯店取貨 📍`;
   if (note) text += `\n\n${note}`;
   return text;
 }
@@ -1047,6 +1067,14 @@ function showResult(msg, isError) {
 // ── Init ──
 loadSettings();
 loadProducts();
+
+// 顏色選擇器更新
+document.getElementById('btnColor').addEventListener('input', function() {
+  document.getElementById('btnColorText').textContent = this.value;
+});
+document.getElementById('priceColor').addEventListener('input', function() {
+  document.getElementById('priceColorText').textContent = this.value;
+});
 </script>
 </body>
 </html>
