@@ -98,6 +98,9 @@
     display: none;
     gap: 16px;
     flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
   .settings-panel.open { display: flex; }
   .field-group {
@@ -547,10 +550,10 @@
     .settings-btn { font-size: 11px; padding: 5px 10px; }
 
     /* 設定面板 */
-    .settings-panel { flex-direction: column; padding: 12px; gap: 10px; }
-    .field-group { min-width: unset !important; width: 100%; }
-    .field-group input { width: 100% !important; min-width: unset !important; }
-    .save-btn { width: 100%; }
+    .settings-panel { flex-direction: column !important; padding: 12px !important; gap: 10px !important; width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
+    .field-group { min-width: unset !important; width: 100% !important; max-width: 100% !important; }
+    .field-group input { width: 100% !important; min-width: unset !important; max-width: 100% !important; box-sizing: border-box !important; }
+    .save-btn { width: 100% !important; }
 
     /* 篩選列 */
     .toolbar { flex-direction: column; align-items: flex-start; gap: 6px; }
