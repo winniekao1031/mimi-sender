@@ -882,19 +882,11 @@ function buildFlexCarousel(items, note) {
       spacing: 'sm',
       contents: [
         {
-          type: 'text',
-          text: '截圖給闆娘 高小攸 也可以 😊',
-          size: 'xs',
-          color: '#888888',
-          align: 'center',
-          wrap: true
-        },
-        {
           type: 'button',
           action: {
             type: 'message',
             label: '我要訂購',
-            text: `我要訂購\n商品：${p.code} ${p.name}\n尺寸：（請填入）\n-----\n截圖給闆娘 高小攸 也可以 😊`
+            text: `我要訂購 ${p.code} ${p.name}`
           },
           style: 'primary',
           color: '#c9a84c',
