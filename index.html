@@ -879,17 +879,28 @@ function buildFlexCarousel(items, note) {
     footer: {
       type: 'box',
       layout: 'vertical',
-      contents: [{
-        type: 'button',
-        action: {
-          type: 'uri',
-          label: '我要訂購',
-          uri: `https://line.me/ti/p/~chami_1031?oat_content=msg&oat_msg=${encodeURIComponent('我要訂購 ' + p.code + ' ' + p.name)}`
+      spacing: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '截圖給闆娘 高小攸 也可以 😊',
+          size: 'xs',
+          color: '#888888',
+          align: 'center',
+          wrap: true
         },
-        style: 'primary',
-        color: '#c9a84c',
-        height: 'sm'
-      }]
+        {
+          type: 'button',
+          action: {
+            type: 'message',
+            label: '我要訂購',
+            text: `我要訂購\n商品：${p.code} ${p.name}\n尺寸：（請填入）\n-----\n截圖給闆娘 高小攸 也可以 😊`
+          },
+          style: 'primary',
+          color: '#c9a84c',
+          height: 'sm'
+        }
+      ]
     }
   }));
 
