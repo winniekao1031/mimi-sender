@@ -937,17 +937,27 @@ function buildFlexCarousel(items, note) {
         type: 'box',
         layout: 'vertical',
         spacing: 'sm',
-        contents: [{
-          type: 'button',
-          action: {
-            type: 'message',
-            label: '我要訂購',
-            text: `我要訂購 ${String(p.code || '')} ${String(p.name || '')}`
+        contents: [
+          {
+            type: 'text',
+            text: '截圖給闆娘 高小攸 也可以 😊',
+            size: 'xs',
+            color: '#888888',
+            align: 'center',
+            wrap: true
           },
-          style: 'primary',
-          color: '#c9a84c',
-          height: 'sm'
-        }]
+          {
+            type: 'button',
+            action: {
+              type: 'message',
+              label: '我要訂購',
+              text: `我要訂購 ${String(p.code || '')} ${String(p.name || '')}`
+            },
+            style: 'primary',
+            color: '#c9a84c',
+            height: 'sm'
+          }
+        ]
       }
     };
     if (validImg) {
@@ -962,21 +972,15 @@ function buildFlexCarousel(items, note) {
     return bubble;
   });
 
-  const header = note ? [{
-    type: 'bubble',
-    body: {
-      type: 'box', layout: 'vertical', justifyContent: 'center', paddingAll: '20px',
-      contents: [
-        { type: 'text', text: `🛍 ${today} 新品上架`, weight: 'bold', size: 'lg', wrap: true, color: '#333333' },
-        { type: 'text', text: String(note), size: 'sm', wrap: true, color: '#666666', margin: 'md' }
-      ]
-    }
-  }] : [];
+  // note 加到 altText，不用獨立 bubble 避免格式錯誤
+  const altText = note
+    ? `🛍 ${today} 新品上架｜${note.replace(/[\n\r]/g,' ').slice(0,50)}`
+    : `🛍 ${today} 新品上架 ${items.length} 件商品`;
 
   return {
     type: 'flex',
-    altText: `🛍 新品上架 ${items.length} 件商品`,
-    contents: { type: 'carousel', contents: [...header, ...bubbles] }
+    altText: altText,
+    contents: { type: 'carousel', contents: bubbles }
   };
 }
 
