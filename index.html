@@ -601,14 +601,62 @@
 
 <script>
 // ── Data ──
-const PRODUCTS = [
-  { code:'C0010', name:'基本百搭款 素色反摺短褲', price:'$120', sizes:'紫(淡紫):9/11, 白:9', cat:'女寶下身', imageUrl:'' },
-  { code:'C0011', name:'碎花雪紡百褶褲', price:'$100', sizes:'藍綠:9/15/17', cat:'女寶下身', imageUrl:'' },
-  { code:'C0012', name:'棉質休閒褲裙', price:'$120', sizes:'灰:5/9', cat:'女寶下身', imageUrl:'' },
-  { code:'C0036', name:'涼感 彈力短袖運動套裝', price:'$150', sizes:'左下深藍130', cat:'夏套裝', imageUrl:'' },
-  { code:'H0001', name:'涼感抗UV防曬外套', price:'$180', sizes:'卡其/白:110/120/130', cat:'外套', imageUrl:'' },
-  { code:'E0001', name:'純棉圓領短袖T恤', price:'$90', sizes:'白/灰/黑:100/110/120/130', cat:'上衣', imageUrl:'' },
+let PRODUCTS = [];
+
+// Google Sheets 設定
+const SHEET_CONFIGS = [
+  { id: '1AKt-FH2EgFnHqIbdaNFM4uzBnL1J-nw1Kks_aC_PUiE', sheets: ['C0000','H0001','E0000-2025'] },
+  { id: '1I6rcLTilZju1VdheCoT1tDHmEngewbHXk0WZeLOoUJY', sheets: ['K0001','A0001-2025','D0001-2025','P0001'] },
 ];
+
+// 欄位對應（A=0, B=1... AD=29）
+const COL = { cat:0, barcode:1, name:4, sizes:5, price:13, text:14, imageUrl:29 };
+
+async function loadProducts() {
+  document.getElementById('productGrid').innerHTML = '<div style="padding:20px;color:var(--text-muted);">載入商品中...</div>';
+  const allProducts = [];
+
+  for (const config of SHEET_CONFIGS) {
+    for (const sheetName of config.sheets) {
+      try {
+        const url = `https://docs.google.com/spreadsheets/d/${config.id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+        const res = await fetch(url);
+        const text = await res.text();
+        const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+        const rows = json.table.rows;
+
+        for (const row of rows) {
+          const getVal = (i) => row.c && row.c[i] && row.c[i].v != null ? String(row.c[i].v).trim() : '';
+          const barcode = getVal(COL.barcode);
+          const name = getVal(COL.name);
+          if (!barcode || !name || barcode === '條碼') continue;
+
+          const priceRaw = getVal(COL.price);
+          const price = priceRaw ? (priceRaw.startsWith('$') ? priceRaw : `$${priceRaw}`) : '';
+
+          allProducts.push({
+            code: barcode,
+            name: name,
+            price: price,
+            sizes: getVal(COL.sizes),
+            cat: getVal(COL.cat) || sheetName,
+            imageUrl: getVal(COL.imageUrl),
+            text: getVal(COL.text),
+            sheet: sheetName,
+          });
+        }
+      } catch(e) {
+        console.warn(`載入 ${sheetName} 失敗:`, e.message);
+      }
+    }
+  }
+
+  PRODUCTS = allProducts;
+  renderCats();
+  renderGrid();
+  renderSelectedList();
+  document.getElementById('totalCount').textContent = `${PRODUCTS.length} 件`;
+}
 
 let selected = new Set();
 let currentMode = 'carousel';
@@ -867,9 +915,7 @@ function showResult(msg, isError) {
 
 // ── Init ──
 loadSettings();
-renderCats();
-renderGrid();
-renderSelectedList();
+loadProducts();
 </script>
 </body>
 </html>
