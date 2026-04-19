@@ -598,14 +598,18 @@
       bottom: 0;
       left: 0;
       right: 0;
-      max-height: 60vh;
-      overflow-y: auto;
+      max-height: 55vh;
       background: var(--surface);
       border-top: 1px solid var(--border);
       z-index: 200;
       display: flex;
       flex-direction: column;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+      overflow: hidden;
+    }
+    .send-actions {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     /* 折疊標題列超緊湊 */
     .send-panel .panel-section { padding: 0; }
@@ -782,8 +786,8 @@
       <!-- 排程區（折疊） -->
       <div style="border-top:1px solid var(--border);padding-top:6px;">
         <div style="display:flex;gap:5px;align-items:center;">
-          <input type="time" id="scheduleTime" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-size:12px;font-family:inherit;">
-          <input type="text" id="scheduleLabel" placeholder="備註（選填）" style="flex:2;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-size:11px;font-family:inherit;">
+          <input type="time" id="scheduleTime" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-size:12px;font-family:inherit;">
+          <input type="text" id="scheduleLabel" placeholder="備註（選填）" style="flex:2;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-size:11px;font-family:inherit;">
           <button onclick="addSchedule()" style="background:var(--gold);color:#1a0e0e;border:none;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">⏰</button>
         </div>
         <div id="scheduleList" style="margin-top:4px;display:flex;flex-direction:column;gap:3px;"></div>
