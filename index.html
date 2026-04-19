@@ -1171,7 +1171,7 @@ async function handleGenerateImage() {
   const dpr = Math.max(window.devicePixelRatio || 1, 3);
   const cols = Math.min(items.length, 2);
   const cardW = 320;
-  const cardH = 380;
+  const cardH = 420;
   const gap = 12;
   const padX = 20;
   const padY = 20;
@@ -1215,7 +1215,7 @@ async function handleGenerateImage() {
       try {
         const img = await loadImage(p.imageUrl);
         const imgAreaW = cardW - 24;
-        const imgAreaH = 260;
+        const imgAreaH = 300;
         const imgX = x + 12;
         const imgY = y + 12;
 
@@ -1242,15 +1242,15 @@ async function handleGenerateImage() {
         ctx.restore();
       } catch(e) {
         ctx.fillStyle = '#231e21';
-        ctx.fillRect(x + 12, y + 12, cardW - 24, 260);
+        ctx.fillRect(x + 12, y + 12, cardW - 24, 300);
         ctx.fillStyle = '#555';
         ctx.font = '40px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('👗', x + cardW / 2, y + 140);
+        ctx.fillText('👗', x + cardW / 2, y + 160);
       }
     }
 
-    const textY = y + 12 + 260 + 8;
+    const textY = y + 12 + 300 + 8;
     // 貨號
     ctx.fillStyle = '#664';
     ctx.font = '10px sans-serif';
