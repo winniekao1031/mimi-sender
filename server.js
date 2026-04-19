@@ -11,10 +11,11 @@ const LINE_TOKEN = process.env.LINE_TOKEN || '';
 const ORDER_SHEET_ID = '1-FmCKLXnneSdEf5Q9-JQZ80Y1FBt0WXOU6C2fXUycH4';
 const NOTIFY_LINE_ID = 'chami_1031'; // 通知對象的 user ID（需要用 webhook 取得）
 
-// Basic Auth 驗證（只對控制台，不對訂購表單）
+// Basic Auth 驗證（只對控制台，不對訂購表單和 LIFF）
 function checkAuth(req, res, next) {
-  // 訂購表單和 API 不需要驗證
+  // 以下路徑不需要驗證
   if (req.path === '/order.html' || req.path === '/api/order') return next();
+  if (req.path.startsWith('/liff')) return next();
   
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Basic ')) {
@@ -102,6 +103,11 @@ app.post('/api/line/broadcast', async (req, res) => {
   } catch(e) {
     res.status(500).json({ message: e.message });
   }
+});
+
+// LIFF 專用路徑（不需要 Basic Auth）
+app.get('/liff', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('*', (req, res) => {
