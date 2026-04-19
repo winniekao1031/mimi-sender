@@ -257,23 +257,40 @@
 // ── 從 URL 參數讀取商品資訊 ──
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code') || '';
-const name = params.get('name') || '';
-const price = params.get('price') || '';
-const sizes = params.get('sizes') || '';
-const imageUrl = params.get('img') || '';
-const cat = params.get('cat') || '';
+let name = params.get('name') || '';
+let price = params.get('price') || '';
+let sizes = params.get('sizes') || '';
+let imageUrl = params.get('img') || '';
+let cat = params.get('cat') || '';
 
-// 顯示商品資訊
-document.getElementById('productCode').textContent = code;
-document.getElementById('productName').textContent = name || '商品資訊載入中...';
-document.getElementById('productPrice').textContent = price;
-if (cat) document.getElementById('productCat').textContent = `分類：${cat}`;
-
-// 顯示圖片
-if (imageUrl) {
-  const wrap = document.getElementById('productImgWrap');
-  wrap.innerHTML = `<img src="${decodeURIComponent(imageUrl)}" alt="${name}" onerror="this.parentElement.innerHTML='<span style=font-size:48px>👗</span>'">`;
+// 如果只有 code，從 API 查詢完整資料
+async function loadProductData() {
+  if (code && !name) {
+    try {
+      const r = await fetch(`/api/product?code=${encodeURIComponent(code)}`);
+      if (r.ok) {
+        const p = await r.json();
+        name = p.name || '';
+        price = p.price || '';
+        sizes = p.sizes || '';
+        imageUrl = p.imageUrl || '';
+        cat = p.cat || '';
+      }
+    } catch(e) { console.warn('查詢商品失敗', e); }
+  }
+  // 填入畫面
+  document.getElementById('productCode').textContent = code;
+  document.getElementById('productName').textContent = name || '商品資訊載入中...';
+  document.getElementById('productPrice').textContent = price;
+  if (cat) document.getElementById('productCat').textContent = `分類：${cat}`;
+  if (imageUrl) {
+    const wrap = document.getElementById('productImgWrap');
+    wrap.innerHTML = `<img src="${decodeURIComponent(imageUrl)}" alt="${name}" onerror="this.parentElement.innerHTML='<span style=font-size:48px>👗</span>'">`;
+  }
+  const sizeList = parseSizes(decodeURIComponent(sizes));
+  renderSizes(sizeList);
 }
+loadProductData();
 
 // ── 解析尺寸 ──
 // 格式：「灰:5/7/9 黑:5/7」或「5/7/9/11」
@@ -304,26 +321,23 @@ function parseSizes(sizeStr) {
   return [...new Set(sizes)]; // 去重
 }
 
-const sizeList = parseSizes(decodeURIComponent(sizes));
 let selectedSize = '';
 
-function renderSizes() {
+function renderSizes(sizeList) {
   const grid = document.getElementById('sizeGrid');
-  if (sizeList.length === 0) {
+  if (!sizeList || sizeList.length === 0) {
     grid.innerHTML = '<div style="color:#bbb;font-size:13px;">請私訊詢問尺寸</div>';
     return;
   }
   grid.innerHTML = sizeList.map(s => `
-    <button class="size-btn ${selectedSize === s ? 'selected' : ''}" onclick="selectSize('${s}')">${s}</button>
+    <button class="size-btn ${selectedSize === s ? 'selected' : ''}" onclick="selectSize('${s}', ${JSON.stringify(sizeList)})">${s}</button>
   `).join('');
 }
 
-function selectSize(size) {
+function selectSize(size, sizeList) {
   selectedSize = size;
-  renderSizes();
+  renderSizes(sizeList);
 }
-
-renderSizes();
 
 // ── 送出訂單 ──
 async function submitOrder() {

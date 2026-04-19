@@ -105,6 +105,46 @@ app.post('/api/line/broadcast', async (req, res) => {
   }
 });
 
+// 商品查詢 API（用 code 查詢商品資料）
+const SHEET_CONFIGS = [
+  { id: '1AKt-FH2EgFnHqIbdaNFM4uzBnL1J-nw1Kks_aC_PUiE', sheets: ['C0000','H0001','E0000-2025'] },
+  { id: '1I6rcLTilZju1VdheCoT1tDHmEngewbHXk0WZeLOoUJY', sheets: ['K0001','A0001-2025','D0001-2025','P0001'] },
+];
+const COL = { cat:0, barcode:1, name:4, sizes:5, price:13, imageUrl:29 };
+
+app.get('/api/product', async (req, res) => {
+  const code = (req.query.code || '').trim();
+  if (!code) return res.status(400).json({ error: 'code required' });
+  try {
+    for (const config of SHEET_CONFIGS) {
+      for (const sheetName of config.sheets) {
+        const url = `https://docs.google.com/spreadsheets/d/${config.id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+        const r = await fetch(url);
+        const text = await r.text();
+        const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+        const rows = json.table.rows;
+        for (const row of rows) {
+          const getVal = (i) => row.c && row.c[i] && row.c[i].v != null ? String(row.c[i].v).trim() : '';
+          const barcode = getVal(COL.barcode);
+          if (barcode !== code) continue;
+          const priceRaw = getVal(COL.price);
+          return res.json({
+            code: barcode,
+            name: getVal(COL.name),
+            sizes: getVal(COL.sizes),
+            price: priceRaw ? (priceRaw.startsWith('$') ? priceRaw : `$${priceRaw}`) : '',
+            imageUrl: getVal(COL.imageUrl),
+            cat: getVal(COL.cat) || sheetName,
+          });
+        }
+      }
+    }
+    res.status(404).json({ error: '找不到商品' });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // LIFF 專用路徑（不需要 Basic Auth）
 app.get('/liff', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
