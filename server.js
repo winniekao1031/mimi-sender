@@ -26,6 +26,7 @@ function checkAuth(req, res, next) {
   if (req.path.startsWith('/liff')) return next();
   if (req.path.startsWith('/api/schedule')) return next();
   if (req.path.startsWith('/api/product')) return next();
+  if (req.path.startsWith('/api/imgproxy')) return next();
   
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Basic ')) {
@@ -247,6 +248,24 @@ app.delete('/api/schedule/:id', (req, res) => {
   res.json({ success: true });
 });
 // ──────────────────────────────────────────────────
+
+// 圖片代理（解決 CORS 問題）
+app.get('/api/imgproxy', async (req, res) => {
+  const url = req.query.url;
+  if (!url || !url.startsWith('https://lh3.googleusercontent.com')) {
+    return res.status(400).send('invalid url');
+  }
+  try {
+    const r = await fetch(url);
+    const buf = await r.arrayBuffer();
+    const ct = r.headers.get('content-type') || 'image/jpeg';
+    res.set('Content-Type', ct);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(Buffer.from(buf));
+  } catch(e) {
+    res.status(500).send('error');
+  }
+});
 
 // LIFF 專用路徑（不需要 Basic Auth）
 app.get('/liff', (req, res) => {

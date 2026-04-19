@@ -1285,11 +1285,14 @@ function roundRect(ctx, x, y, w, h, r) {
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // 走代理解決 CORS
+    const proxySrc = src.startsWith('https://lh3.googleusercontent.com')
+      ? `/api/imgproxy?url=${encodeURIComponent(src)}`
+      : src;
     img.onload = () => resolve(img);
     img.onerror = reject;
-    img.src = src;
-    setTimeout(() => reject(new Error('timeout')), 5000);
+    img.src = proxySrc;
+    setTimeout(() => reject(new Error('timeout')), 8000);
   });
 }
 
