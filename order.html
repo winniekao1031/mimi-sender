@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>哈摟米米 ｜ 訂購表單</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a6330;
+    --bg: #f8f5ef;
+    --white: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #888;
+    --border: #e5ddd0;
+    --radius: 12px;
+    --green: #2d9e6b;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 40px;
+  }
+
+  /* Header */
+  .header {
+    background: #1a1200;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-logo { font-size: 22px; }
+  .header-title { color: var(--gold-light); font-size: 16px; font-weight: 700; }
+  .header-sub { color: #7a6330; font-size: 12px; }
+
+  /* Product Card */
+  .product-card {
+    background: var(--white);
+    margin: 16px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .product-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: #f0ebe0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+  }
+  .product-img img { width: 100%; height: 100%; object-fit: cover; }
+  .product-info { padding: 16px; }
+  .product-code { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .product-name { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .product-price { font-size: 20px; font-weight: 700; color: var(--gold-dim); }
+
+  /* Form */
+  .form-section {
+    background: var(--white);
+    margin: 0 16px 12px;
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Size buttons */
+  .size-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .size-btn {
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .size-btn:hover { border-color: var(--gold); }
+  .size-btn.selected {
+    background: #1a1200;
+    border-color: var(--gold);
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+  .size-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+
+  /* Input fields */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--white);
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+  .field input::placeholder { color: #bbb; }
+
+  /* Submit button */
+  .submit-btn {
+    width: calc(100% - 32px);
+    margin: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #c9a84c, #7a6330);
+    color: #1a1200;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .submit-btn:hover { filter: brightness(1.05); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled {
+    background: #ccc;
+    color: #888;
+    cursor: not-allowed;
+  }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 30px;
+  }
+  .success-icon { font-size: 60px; margin-bottom: 20px; }
+  .success-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; color: var(--green); }
+  .success-msg { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+  /* Error */
+  .error-msg {
+    font-size: 13px;
+    color: #e05c5c;
+    margin-top: 8px;
+    display: none;
+  }
+
+  .loading { opacity: 0.6; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">👗</div>
+  <div>
+    <div class="header-title">哈摟米米童著</div>
+    <div class="header-sub">@hellomimi</div>
+  </div>
+</div>
+
+<div id="mainForm">
+  <!-- 商品資訊 -->
+  <div class="product-card">
+    <div class="product-img" id="productImgWrap">
+      <span id="productImgEmoji">👗</span>
+    </div>
+    <div class="product-info">
+      <div class="product-code" id="productCode">載入中...</div>
+      <div class="product-name" id="productName">載入中...</div>
+      <div class="product-price" id="productPrice"></div>
+    </div>
+  </div>
+
+  <!-- 尺寸選擇 -->
+  <div class="form-section">
+    <div class="section-title">選擇尺寸</div>
+    <div class="size-grid" id="sizeGrid">
+      <div style="color:#bbb;font-size:13px;">載入中...</div>
+    </div>
+    <div class="size-note" id="sizeNote"></div>
+  </div>
+
+  <!-- 客人資料 -->
+  <div class="form-section">
+    <div class="section-title">訂購資料</div>
+    <div class="field">
+      <label>姓名 *</label>
+      <input type="text" id="customerName" placeholder="請填入姓名" />
+    </div>
+    <div class="field">
+      <label>LINE ID *</label>
+      <input type="text" id="customerId" placeholder="請填入 LINE ID" />
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg">請確認所有欄位都已填寫！</div>
+  <button class="submit-btn" id="submitBtn" onclick="submitOrder()">確認送出訂單</button>
+</div>
+
+<!-- 成功畫面 -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">🎉</div>
+  <div class="success-title">訂單送出成功！</div>
+  <div class="success-msg">
+    感謝您的訂購！<br>
+    闆娘 高小攸 會盡快與您確認訂單。<br><br>
+    如有任何問題請私訊<br>
+    LINE ID：chami_1031
+  </div>
+</div>
+
+<script>
+// ── 從 URL 參數讀取商品資訊 ──
+const params = new URLSearchParams(window.location.search);
+const code = params.get('code') || '';
+const name = params.get('name') || '';
+const price = params.get('price') || '';
+const sizes = params.get('sizes') || '';
+const imageUrl = params.get('img') || '';
+
+// 顯示商品資訊
+document.getElementById('productCode').textContent = code;
+document.getElementById('productName').textContent = name || '商品資訊載入中...';
+document.getElementById('productPrice').textContent = price;
+
+// 顯示圖片
+if (imageUrl) {
+  const wrap = document.getElementById('productImgWrap');
+  wrap.innerHTML = `<img src="${decodeURIComponent(imageUrl)}" alt="${name}" onerror="this.parentElement.innerHTML='<span style=font-size:48px>👗</span>'">`;
+}
+
+// ── 解析尺寸 ──
+// 格式：「灰:5/7/9 黑:5/7」或「5/7/9/11」
+function parseSizes(sizeStr) {
+  if (!sizeStr) return [];
+  const sizes = [];
+  
+  // 嘗試解析「顏色:尺寸/尺寸」格式
+  const colorPattern = /([^\s:]+):([0-9/,*\s]+)/g;
+  let match;
+  let hasColor = false;
+  
+  while ((match = colorPattern.exec(sizeStr)) !== null) {
+    hasColor = true;
+    const color = match[1].trim();
+    const nums = match[2].split(/[\/,]/).map(s => s.replace(/\*\d+/, '').trim()).filter(Boolean);
+    nums.forEach(num => {
+      if (num) sizes.push(`${color} ${num}`);
+    });
+  }
+  
+  // 純數字格式
+  if (!hasColor) {
+    const nums = sizeStr.split(/[\/,\s]/).map(s => s.trim()).filter(Boolean);
+    nums.forEach(num => sizes.push(num));
+  }
+  
+  return [...new Set(sizes)]; // 去重
+}
+
+const sizeList = parseSizes(decodeURIComponent(sizes));
+let selectedSize = '';
+
+function renderSizes() {
+  const grid = document.getElementById('sizeGrid');
+  if (sizeList.length === 0) {
+    grid.innerHTML = '<div style="color:#bbb;font-size:13px;">請私訊詢問尺寸</div>';
+    return;
+  }
+  grid.innerHTML = sizeList.map(s => `
+    <button class="size-btn ${selectedSize === s ? 'selected' : ''}" onclick="selectSize('${s}')">${s}</button>
+  `).join('');
+}
+
+function selectSize(size) {
+  selectedSize = size;
+  renderSizes();
+}
+
+renderSizes();
+
+// ── 送出訂單 ──
+async function submitOrder() {
+  const customerName = document.getElementById('customerName').value.trim();
+  const customerId = document.getElementById('customerId').value.trim();
+  const errorEl = document.getElementById('errorMsg');
+
+  if (!selectedSize || !customerName || !customerId) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = !selectedSize ? '請選擇尺寸！' : '請填寫所有必填欄位！';
+    return;
+  }
+
+  errorEl.style.display = 'none';
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = '送出中...';
+
+  const orderData = {
+    time: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+    code,
+    name,
+    size: selectedSize,
+    customerName,
+    customerId,
+    price
+  };
+
+  try {
+    const res = await fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
+
+    if (!res.ok) throw new Error('送出失敗');
+
+    document.getElementById('mainForm').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+  } catch(e) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = '送出失敗，請稍後再試或直接私訊闆娘';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = '確認送出訂單';
+  }
+}
+</script>
+</body>
+</html>
