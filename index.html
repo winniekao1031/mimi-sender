@@ -549,7 +549,7 @@
     .product-area {
       border-right: none;
       padding: 10px;
-      padding-bottom: 380px; /* 留給底部發送區（含排程） */
+      padding-bottom: 260px; /* 留給底部發送區 */
       overflow-y: auto;
       height: auto;
     }
@@ -737,7 +737,7 @@
       <!-- 排程區 -->
       <div style="border-top:1px solid var(--border);padding-top:6px;">
         <div style="display:flex;gap:5px;align-items:center;">
-          <input type="time" id="scheduleTime" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-size:12px;font-family:inherit;">
+          <input type="time" id="scheduleTime" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-size:12px;font-family:inherit;color-scheme:dark;">
           <input type="text" id="scheduleLabel" placeholder="備註（選填）" style="flex:2;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-size:11px;font-family:inherit;">
           <button onclick="addSchedule()" style="background:var(--gold);color:#1a0e0e;border:none;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">⏰</button>
         </div>
