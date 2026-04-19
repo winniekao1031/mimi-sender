@@ -947,14 +947,34 @@ function setMode(mode) {
 function buildText() {
   const items = PRODUCTS.filter(p => selected.has(p.code));
   const note = document.getElementById('noteInput').value.trim();
-  let text = '';
+  const today = new Date().toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
+  let text = `🛍 哈摟米米童著 ${today} 上新\n`;
+  if (note) text += `${note}\n`;
+  text += `${'─'.repeat(20)}\n\n`;
   items.forEach((p, idx) => {
     if (idx > 0) text += '\n\n';
-    text += `【${p.code}】${p.name}\n`;
-    text += `💰 ${p.price}\n`;
-    text += `📏 現貨可喊尺寸：${p.sizes}`;
+    // hashtags 在品名上方
+    text += `#現貨 #可當日出貨\n`;
+    // 品名前加☑️，後面加 - 編號前5碼
+    const shortCode = (p.code || '').slice(0, 5);
+    text += `☑️ ${p.name} - ${shortCode}\n`;
+    // 尺寸換行顯示，顏色分行
+    if (p.sizes) {
+      text += `⬇️ 現貨可喊尺寸⬇️\n`;
+      // 把「顏色:尺寸」每個顏色分一行
+      const sizeLines = p.sizes.split(/(?=[^\s:]+:)/);
+      sizeLines.forEach(s => {
+        const trimmed = s.trim();
+        if (trimmed) text += `${trimmed}\n`;
+      });
+    }
+    if (p.price) text += `💰 售價：${p.price}\n`;
+    const orderUrl = `https://mimi-sender.zeabur.app/order.html?code=${encodeURIComponent(p.code||'')}&name=${encodeURIComponent(p.name||'')}&price=${encodeURIComponent(p.price||'')}&sizes=${encodeURIComponent(p.sizes||'')}&img=${encodeURIComponent(p.imageUrl||'')}&cat=${encodeURIComponent(p.cat||'')}`;
+    text += `🛒 立即訂購：${orderUrl}`;
   });
-  if (note) text += `\n\n${note}`;
+  text += `\n\n${'─'.repeat(20)}\n`;
+  text += `📩 私訊闆娘：LINE ID chami_1031\n`;
+  text += `🏪 官方帳號：@hellomimi`;
   return text;
 }
 function handleCopy() {
