@@ -537,7 +537,7 @@
     .product-area {
       border-right: none;
       padding: 10px;
-      padding-bottom: 160px; /* 留給底部發送區 */
+      padding-bottom: 220px; /* 留給底部發送區 */
       overflow-y: auto;
       height: auto;
     }
@@ -571,7 +571,7 @@
     }
     .product-card { padding: 8px; }
     .card-check { width: 16px; height: 16px; margin-bottom: 5px; }
-    .card-img-wrap { height: auto !important; aspect-ratio: 1/1; border-radius: 6px; }
+    .card-img-wrap { height: 100px !important; aspect-ratio: unset; border-radius: 6px; }
     .card-code { font-size: 9px; }
     .card-name { font-size: 11px !important; -webkit-line-clamp: 2; margin-bottom: 3px; }
     .card-sizes { font-size: 10px !important; }
@@ -593,20 +593,22 @@
       flex-direction: column;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
     }
-    .panel-section { padding: 8px 12px; }
-    .panel-title { font-size: 10px; margin-bottom: 6px; }
+    /* 折疊標題列超緊湊 */
+    .send-panel .panel-section { padding: 0; }
+    .send-panel [onclick] { padding: 7px 14px !important; }
+    .panel-title { font-size: 10px; margin-bottom: 0; }
     .mode-btn { font-size: 11px; padding: 6px 4px; }
 
-    /* 隱藏已選清單和附加說明（手機版簡化） */
+    /* 隱藏已選清單（手機版簡化） */
     .selected-list { display: none; }
     .panel-section:nth-child(2) { display: none; }
     .note-wrap { margin-top: 0; }
-    .note-wrap textarea { height: 50px; font-size: 12px; }
+    .note-wrap textarea { height: 46px; font-size: 12px; }
 
-    .send-actions { padding: 8px 12px 12px; gap: 6px; }
+    .send-actions { padding: 6px 12px 10px; gap: 5px; }
     .send-count-text { font-size: 11px; }
-    .send-btn { padding: 12px; font-size: 14px; }
-    .copy-btn { padding: 8px; font-size: 12px; }
+    .send-btn { padding: 10px; font-size: 13px; }
+    .copy-btn { padding: 7px; font-size: 11px; }
     .result-msg { font-size: 11px; }
   }
 
