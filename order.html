@@ -206,6 +206,7 @@
       <div class="product-code" id="productCode">載入中...</div>
       <div class="product-name" id="productName">載入中...</div>
       <div class="product-price" id="productPrice"></div>
+      <div id="productCat" style="font-size:11px;color:var(--text-muted);margin-top:4px;"></div>
     </div>
   </div>
 
@@ -260,11 +261,13 @@ const name = params.get('name') || '';
 const price = params.get('price') || '';
 const sizes = params.get('sizes') || '';
 const imageUrl = params.get('img') || '';
+const cat = params.get('cat') || '';
 
 // 顯示商品資訊
 document.getElementById('productCode').textContent = code;
 document.getElementById('productName').textContent = name || '商品資訊載入中...';
 document.getElementById('productPrice').textContent = price;
+if (cat) document.getElementById('productCat').textContent = `分類：${cat}`;
 
 // 顯示圖片
 if (imageUrl) {
@@ -278,15 +281,15 @@ function parseSizes(sizeStr) {
   if (!sizeStr) return [];
   const sizes = [];
   
-  // 嘗試解析「顏色:尺寸/尺寸」格式
-  const colorPattern = /([^\s:]+):([0-9/,*\s]+)/g;
+  // 嘗試解析「顏色:尺寸/尺寸」或「顏色:尺寸、尺寸」格式
+  const colorPattern = /([^\s:、,\/]+):([0-9\/,、*\s]+)/g;
   let match;
   let hasColor = false;
   
   while ((match = colorPattern.exec(sizeStr)) !== null) {
     hasColor = true;
     const color = match[1].trim();
-    const nums = match[2].split(/[\/,]/).map(s => s.replace(/\*\d+/, '').trim()).filter(Boolean);
+    const nums = match[2].split(/[\/,、]/).map(s => s.replace(/\*\d+/, '').trim()).filter(Boolean);
     nums.forEach(num => {
       if (num) sizes.push(`${color} ${num}`);
     });
@@ -294,7 +297,7 @@ function parseSizes(sizeStr) {
   
   // 純數字格式
   if (!hasColor) {
-    const nums = sizeStr.split(/[\/,\s]/).map(s => s.trim()).filter(Boolean);
+    const nums = sizeStr.split(/[\/,、\s]/).map(s => s.trim()).filter(Boolean);
     nums.forEach(num => sizes.push(num));
   }
   

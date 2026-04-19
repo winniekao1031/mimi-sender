@@ -259,7 +259,7 @@
     .card-name { font-size: 11px !important; -webkit-line-clamp: 2; }
     .card-sizes { font-size: 10px !important; }
     .card-price { font-size: 12px !important; }
-    .card-cat { display: none !important; }
+    .card-cat { display: inline-block !important; font-size: 8px !important; padding: 1px 4px !important; }
     .card-code { font-size: 9px !important; }
   }
 
@@ -351,12 +351,13 @@
   }
   .card-price { font-size: 13px; font-weight: 700; color: var(--gold); }
   .card-cat {
-    font-size: 10px;
+    font-size: 9px;
     background: var(--surface2);
     color: var(--text-dim);
-    padding: 2px 6px;
+    padding: 2px 5px;
     border-radius: 4px;
     border: 1px solid var(--border);
+    white-space: nowrap;
   }
   .card-sizes {
     font-size: 10px;
@@ -588,7 +589,7 @@
     .card-name { font-size: 11px !important; -webkit-line-clamp: 2; margin-bottom: 3px; }
     .card-sizes { font-size: 10px !important; }
     .card-price { font-size: 12px !important; }
-    .card-cat { display: none !important; }
+    .card-cat { display: inline-block !important; font-size: 8px !important; padding: 1px 4px !important; }
     .card-bottom { margin-top: 3px; }
 
     /* 發送區塊：固定在底部 */
@@ -804,6 +805,7 @@ async function loadProducts() {
             price: price,
             sizes: getVal(COL.sizes),
             cat: getVal(COL.cat) || sheetName,
+            catDisplay: (getVal(COL.cat) || sheetName).replace(/-\d+$/, ''),
             imageUrl: getVal(COL.imageUrl),
             text: getVal(COL.text),
             sheet: sheetName,
@@ -845,7 +847,7 @@ function toggleSettings() {
 
 // ── Render ──
 function getCats() {
-  return ['全部', ...new Set(PRODUCTS.map(p => p.cat))];
+  return ['全部', ...new Set(PRODUCTS.map(p => p.catDisplay))];
 }
 function renderCats() {
   const el = document.getElementById('catFilters');
@@ -861,7 +863,7 @@ function filterCat(cat) {
 function getFiltered() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   return PRODUCTS.filter(p => {
-    const matchCat = currentCat === '全部' || p.cat === currentCat;
+    const matchCat = currentCat === '全部' || p.catDisplay === currentCat;
     const matchQ = !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
     return matchCat && matchQ;
   });
@@ -972,6 +974,10 @@ function buildFlexCarousel(items, note) {
 
   const bubbles = items.map(p => {
     const validImg = p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('https://lh3.googleusercontent.com');
+    const priceText = p.price ? String(p.price) : '洽詢';
+    const sizesText = p.sizes ? `尺寸：${String(p.sizes)}` : '尺寸：洽詢';
+    const codeText = p.code ? String(p.code) : '-';
+    const nameText = p.name ? String(p.name) : '商品';
     const bubble = {
       type: 'bubble',
       size: 'kilo',
@@ -981,10 +987,10 @@ function buildFlexCarousel(items, note) {
         spacing: 'sm',
         paddingAll: '14px',
         contents: [
-          { type: 'text', text: String(p.code || ''), size: 'xs', color: '#888888' },
-          { type: 'text', text: String(p.name || ''), weight: 'bold', size: 'sm', wrap: true, color: '#333333' },
-          { type: 'text', text: String(p.price || ''), size: 'lg', weight: 'bold', color: priceColorVal },
-          { type: 'text', text: `尺寸：${String(p.sizes || '')}`, size: 'xs', color: '#888888', wrap: true }
+          { type: 'text', text: codeText, size: 'xs', color: '#888888' },
+          { type: 'text', text: nameText, weight: 'bold', size: 'sm', wrap: true, color: '#333333' },
+          { type: 'text', text: priceText, size: 'lg', weight: 'bold', color: priceColorVal },
+          { type: 'text', text: sizesText, size: 'xs', color: '#888888', wrap: true }
         ]
       },
       footer: {
@@ -1005,7 +1011,7 @@ function buildFlexCarousel(items, note) {
             action: {
               type: 'uri',
               label: '我要訂購',
-              uri: `https://mimi-sender.zeabur.app/order.html?code=${encodeURIComponent(p.code||'')}&name=${encodeURIComponent(p.name||'')}&price=${encodeURIComponent(p.price||'')}&sizes=${encodeURIComponent(p.sizes||'')}&img=${encodeURIComponent(p.imageUrl||'')}`
+              uri: `https://mimi-sender.zeabur.app/order.html?code=${encodeURIComponent(p.code||'')}&name=${encodeURIComponent(p.name||'')}&price=${encodeURIComponent(p.price||'')}&sizes=${encodeURIComponent(p.sizes||'')}&img=${encodeURIComponent(p.imageUrl||'')}&cat=${encodeURIComponent(p.cat||'')}`
             },
             style: 'primary',
             color: btnColorVal,
