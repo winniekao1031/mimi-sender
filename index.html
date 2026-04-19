@@ -241,6 +241,12 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
     gap: 8px;
+    width: 100%;
+  }
+  .product-card {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   @media (max-width: 600px) {
@@ -266,6 +272,8 @@
     transition: all 0.15s;
     position: relative;
     user-select: none;
+    min-width: 0;
+    overflow: hidden;
   }
   .product-card:hover {
     border-color: var(--gold-dim);
@@ -571,8 +579,9 @@
     .product-grid {
       grid-template-columns: repeat(2, 1fr) !important;
       gap: 6px;
+      width: 100%;
     }
-    .product-card { padding: 6px; }
+    .product-card { padding: 6px; min-width: 0; max-width: 100%; overflow: hidden; }
     .card-check { width: 14px; height: 14px; margin-bottom: 4px; }
     .card-img-wrap { border-radius: 5px; }
     .card-code { font-size: 9px; }
