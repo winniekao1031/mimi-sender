@@ -145,6 +145,56 @@ app.get('/api/product', async (req, res) => {
   }
 });
 
+// ── 排程系統 ──────────────────────────────────────
+const schedules = []; // { id, time: 'HH:MM', label, items, createdAt }
+
+// 每分鐘檢查排程
+setInterval(() => {
+  const now = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hour12: false });
+  const token = process.env.LINE_TOKEN_HELLOMIMI;
+  const notifyUserId = process.env.NOTIFY_USER_ID;
+  if (!token || !notifyUserId) return;
+
+  schedules.forEach(async (s, idx) => {
+    if (s.time === now && !s.fired) {
+      s.fired = true;
+      const itemList = s.items.map(p => `・${p.name}（${p.code}）`).join('\n');
+      const liffUrl = 'https://liff.line.me/1657385678-5T9F9nca';
+      const msg = `⏰ 排程提醒！\n\n${s.label ? s.label + '\n' : ''}共 ${s.items.length} 件商品：\n${itemList}\n\n👉 點此開啟發送：${liffUrl}`;
+      try {
+        await fetch('https://api.line.me/v2/bot/message/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ to: notifyUserId, messages: [{ type: 'text', text: msg }] })
+        });
+      } catch(e) { console.error('排程推播失敗:', e.message); }
+    }
+  });
+}, 60000);
+
+// 新增排程
+app.post('/api/schedule', (req, res) => {
+  const { time, label, items } = req.body;
+  if (!time || !items || items.length === 0) return res.status(400).json({ error: '缺少參數' });
+  const id = Date.now().toString();
+  schedules.push({ id, time, label: label || '', items, fired: false, createdAt: new Date().toISOString() });
+  res.json({ success: true, id });
+});
+
+// 取得排程清單
+app.get('/api/schedule', (req, res) => {
+  res.json(schedules.filter(s => !s.fired));
+});
+
+// 刪除排程
+app.delete('/api/schedule/:id', (req, res) => {
+  const idx = schedules.findIndex(s => s.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: '找不到排程' });
+  schedules.splice(idx, 1);
+  res.json({ success: true });
+});
+// ──────────────────────────────────────────────────
+
 // LIFF 專用路徑（不需要 Basic Auth）
 app.get('/liff', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

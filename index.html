@@ -757,6 +757,17 @@
       <button class="send-btn" id="sendBtn" onclick="handleSend()" disabled>發送到 LINE 群組</button>
       <button class="send-btn" id="liffShareBtn" onclick="handleLiffShare()" disabled style="background:linear-gradient(135deg,#00B900,#00C800);margin-top:6px;">🟢 用 LINE 分享（不耗則數）</button>
       <button class="copy-btn" id="copyBtn" onclick="handleCopy()" disabled>📋 複製文字（貼到社群）</button>
+
+      <!-- 排程區 -->
+      <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:2px;">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="time" id="scheduleTime" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;font-family:inherit;">
+          <input type="text" id="scheduleLabel" placeholder="備註（選填）" style="flex:2;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:12px;font-family:inherit;">
+          <button onclick="addSchedule()" style="background:var(--gold);color:#1a0e0e;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">⏰ 排程</button>
+        </div>
+        <div id="scheduleList" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
+
       <button class="copy-btn" onclick="clearAll()" style="color:var(--red);border-color:var(--red-bg);">✕ 清空已選商品</button>
       <div class="result-msg" id="resultMsg"></div>
     </div>
@@ -1112,6 +1123,56 @@ async function handleSend() {
     document.getElementById('liffShareBtn').disabled = selected.size === 0;
   }
 }
+
+// ── 排程功能 ──────────────────────────────────────
+async function addSchedule() {
+  const time = document.getElementById('scheduleTime').value;
+  const label = document.getElementById('scheduleLabel').value.trim();
+  const items = PRODUCTS.filter(p => selected.has(p.code));
+  if (!time) { showResult('✗ 請選擇提醒時間', true); return; }
+  if (items.length === 0) { showResult('✗ 請先選取商品', true); return; }
+  try {
+    const res = await fetch('/api/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ time, label, items: items.map(p => ({ code: p.code, name: p.name })) })
+    });
+    if (!res.ok) throw new Error();
+    showResult(`✓ 已排程 ${time} 提醒！`, false);
+    document.getElementById('scheduleTime').value = '';
+    document.getElementById('scheduleLabel').value = '';
+    loadSchedules();
+  } catch(e) { showResult('✗ 排程失敗', true); }
+}
+
+async function loadSchedules() {
+  try {
+    const res = await fetch('/api/schedule');
+    const list = await res.json();
+    const el = document.getElementById('scheduleList');
+    if (list.length === 0) { el.innerHTML = ''; return; }
+    el.innerHTML = list.map(s => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;">
+        <div>
+          <span style="font-size:12px;color:var(--gold);font-weight:700;">⏰ ${s.time}</span>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:6px;">${s.label || ''}</span>
+          <span style="font-size:10px;color:var(--text-dim);margin-left:4px;">${s.items.length}件</span>
+        </div>
+        <button onclick="deleteSchedule('${s.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;">✕</button>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+async function deleteSchedule(id) {
+  await fetch(`/api/schedule/${id}`, { method: 'DELETE' });
+  loadSchedules();
+}
+
+// 頁面載入時讀取現有排程
+loadSchedules();
+setInterval(loadSchedules, 60000);
+// ──────────────────────────────────────────────────
 
 // ── 折疊面板 ──────────────────────────────────────
 function toggleAccordion(id) {
