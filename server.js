@@ -1,6 +1,14 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
+
+// ── Sheet 設定 ──
+const SHEET_CONFIGS = [
+  { id: '1AKt-FH2EgFnHqIbdaNFM4uzBnL1J-nw1Kks_aC_PUiE', sheets: ['C0000','H0001','E0000-2025'] },
+  { id: '1I6rcLTilZju1VdheCoT1tDHmEngewbHXk0WZeLOoUJY', sheets: ['K0001','A0001-2025','D0001-2025','P0001'] },
+];
+const COL = { cat:0, barcode:1, name:4, sizes:5, price:13, imageUrl:29 };
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -32,6 +40,54 @@ function checkAuth(req, res, next) {
 }
 
 app.use(checkAuth);
+// ── 動態 OGP（order.html 商品預覽卡）──────────────
+app.get('/order.html', async (req, res) => {
+  const code = (req.query.code || '').trim();
+  let name = '哈摟米米童著';
+  let price = '';
+  let imageUrl = 'https://mimi-sender.zeabur.app/icon.png';
+  let description = '點我立即訂購';
+
+  if (code) {
+    try {
+      for (const config of SHEET_CONFIGS) {
+        for (const sheetName of config.sheets) {
+          const url = `https://docs.google.com/spreadsheets/d/${config.id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+          const r = await fetch(url);
+          const text = await r.text();
+          const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+          for (const row of json.table.rows) {
+            const getVal = (i) => row.c && row.c[i] && row.c[i].v != null ? String(row.c[i].v).trim() : '';
+            if (getVal(COL.barcode) !== code) continue;
+            name = getVal(COL.name) || name;
+            const priceRaw = getVal(COL.price);
+            price = priceRaw ? (priceRaw.startsWith('$') ? priceRaw : `$${priceRaw}`) : '';
+            imageUrl = getVal(COL.imageUrl) || imageUrl;
+            description = `${price ? price + ' | ' : ''}現貨供應，點我立即訂購`;
+            break;
+          }
+          if (name !== '哈摟米米童著') break;
+        }
+        if (name !== '哈摟米米童著') break;
+      }
+    } catch(e) { console.warn('OGP查詢失敗:', e.message); }
+  }
+
+  const pageUrl = `https://mimi-sender.zeabur.app/order.html?code=${encodeURIComponent(code)}`;
+  const html = fs.readFileSync(path.join(__dirname, 'order.html'), 'utf8');
+  const ogpTags = `
+    <meta property="og:title" content="${name}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:image" content="${imageUrl}" />
+    <meta property="og:url" content="${pageUrl}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="哈摟米米童著" />
+    <meta name="twitter:card" content="summary_large_image" />`;
+  const result = html.replace('</head>', `${ogpTags}\n</head>`);
+  res.send(result);
+});
+// ──────────────────────────────────────────────────
+
 app.use(express.static(__dirname));
 
 // ── 訂單 API ──
@@ -108,12 +164,6 @@ app.post('/api/line/broadcast', async (req, res) => {
 });
 
 // 商品查詢 API（用 code 查詢商品資料）
-const SHEET_CONFIGS = [
-  { id: '1AKt-FH2EgFnHqIbdaNFM4uzBnL1J-nw1Kks_aC_PUiE', sheets: ['C0000','H0001','E0000-2025'] },
-  { id: '1I6rcLTilZju1VdheCoT1tDHmEngewbHXk0WZeLOoUJY', sheets: ['K0001','A0001-2025','D0001-2025','P0001'] },
-];
-const COL = { cat:0, barcode:1, name:4, sizes:5, price:13, imageUrl:29 };
-
 app.get('/api/product', async (req, res) => {
   const code = (req.query.code || '').trim();
   if (!code) return res.status(400).json({ error: 'code required' });
