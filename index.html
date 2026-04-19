@@ -615,6 +615,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
 
@@ -724,6 +725,7 @@
     <div class="send-actions">
       <div class="send-count-text" id="sendCountText">尚未選取商品</div>
       <button class="send-btn" id="sendBtn" onclick="handleSend()" disabled>發送到 LINE 群組</button>
+      <button class="send-btn" id="liffShareBtn" onclick="handleLiffShare()" disabled style="background:linear-gradient(135deg,#00B900,#00C800);margin-top:6px;">🟢 用 LINE 分享（不耗則數）</button>
       <button class="copy-btn" id="copyBtn" onclick="handleCopy()" disabled>📋 複製文字（貼到社群）</button>
       <button class="copy-btn" onclick="clearAll()" style="color:var(--red);border-color:var(--red-bg);">✕ 清空已選商品</button>
       <div class="result-msg" id="resultMsg"></div>
@@ -878,6 +880,7 @@ function renderSelectedList() {
     ? '尚未選取商品'
     : `已選取 <span>${n} 件</span>商品`;
   document.getElementById('sendBtn').disabled = n === 0;
+  document.getElementById('liffShareBtn').disabled = n === 0;
   document.getElementById('copyBtn').disabled = n === 0;
 }
 
@@ -1057,8 +1060,57 @@ async function handleSend() {
     showResult(`✗ ${e.message}`, true);
   } finally {
     document.getElementById('sendBtn').disabled = selected.size === 0;
+    document.getElementById('liffShareBtn').disabled = selected.size === 0;
   }
 }
+
+// ── LIFF 分享功能 ──────────────────────────────────
+const LIFF_ID = '1657385678-5T9F9nca';
+let liffReady = false;
+
+async function initLiff() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    liffReady = true;
+  } catch(e) {
+    console.warn('LIFF init failed:', e);
+  }
+}
+initLiff();
+
+async function handleLiffShare() {
+  const items = PRODUCTS.filter(p => selected.has(p.code));
+  if (items.length === 0) { showResult('✗ 請先選取商品', true); return; }
+
+  if (!liffReady) {
+    showResult('✗ LIFF 尚未初始化，請用 LINE 內建瀏覽器開啟此頁面', true);
+    return;
+  }
+  if (!liff.isInClient()) {
+    showResult('✗ 請用手機 LINE App 開啟此控制台，才能使用分享功能', true);
+    return;
+  }
+
+  const note = document.getElementById('noteInput').value.trim();
+  let msg;
+  if (currentMode === 'carousel') {
+    msg = buildFlexCarousel(items, note);
+  } else {
+    msg = { type: 'text', text: buildText() };
+  }
+
+  try {
+    const result = await liff.shareTargetPicker([msg]);
+    if (result) {
+      showResult(`✓ 已分享 ${items.length} 件商品！`, false);
+    } else {
+      showResult('已取消分享', false);
+    }
+  } catch(e) {
+    showResult(`✗ 分享失敗：${e.message}`, true);
+  }
+}
+// ──────────────────────────────────────────────────
 
 function showResult(msg, isError) {
   const el = document.getElementById('resultMsg');
