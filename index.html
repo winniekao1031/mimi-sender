@@ -684,9 +684,10 @@
       <span style="color:#fff;font-size:14px;font-weight:700;">📷 商品卡片預覽</span>
       <button onclick="document.getElementById('imgModal').style.display='none'" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
     </div>
-    <canvas id="cardCanvas" style="width:100%;border-radius:12px;display:block;"></canvas>
-    <button id="downloadBtn" onclick="downloadCardImage()" style="width:100%;margin-top:12px;background:linear-gradient(135deg,#c9847a,#7a4a45);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">⬇️ 下載圖片</button>
-    <div style="color:#888;font-size:11px;text-align:center;margin-top:8px;">手機可長按圖片儲存，電腦按下載</div>
+    <canvas id="cardCanvas" style="display:none;"></canvas>
+    <img id="cardImg" style="width:100%;border-radius:12px;display:block;" alt="商品卡片">
+    <button id="downloadBtn" onclick="downloadCardImage()" style="width:100%;margin-top:12px;background:linear-gradient(135deg,#c9847a,#7a4a45);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">⬇️ 下載圖片（電腦用）</button>
+    <div style="color:#888;font-size:11px;text-align:center;margin-top:8px;">📱 手機：長按圖片 → 儲存圖片<br>💻 電腦：按下載按鈕</div>
   </div>
 </div>
 
@@ -1162,7 +1163,8 @@ async function handleGenerateImage() {
   showResult('產生圖片中...', false);
   document.getElementById('imgBtn').disabled = true;
 
-  // 建立畫布
+  // 建立畫布（高解析度）
+  const dpr = window.devicePixelRatio || 2;
   const cols = Math.min(items.length, 2);
   const cardW = 320;
   const cardH = 380;
@@ -1171,22 +1173,19 @@ async function handleGenerateImage() {
   const padY = 20;
   const rows = Math.ceil(items.length / cols);
   const canvasW = cols * cardW + (cols - 1) * gap + padX * 2;
-  const canvasH = rows * cardH + (rows - 1) * gap + padY * 2 + 60;
+  const canvasH = rows * cardH + (rows - 1) * gap + padY * 2;
 
   const canvas = document.getElementById('cardCanvas');
-  canvas.width = canvasW;
-  canvas.height = canvasH;
+  canvas.width = canvasW * dpr;
+  canvas.height = canvasH * dpr;
+  canvas.style.width = canvasW + 'px';
+  canvas.style.height = canvasH + 'px';
   const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
 
   // 背景
   ctx.fillStyle = '#0f0d0e';
   ctx.fillRect(0, 0, canvasW, canvasH);
-
-  // 標題
-  ctx.fillStyle = '#c9847a';
-  ctx.font = 'bold 18px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('哈摟米米童著 🛍', canvasW / 2, 36);
 
   // 畫每張卡片
   for (let i = 0; i < items.length; i++) {
@@ -1194,7 +1193,7 @@ async function handleGenerateImage() {
     const col = i % cols;
     const row = Math.floor(i / cols);
     const x = padX + col * (cardW + gap);
-    const y = padY + 50 + row * (cardH + gap);
+    const y = padY + row * (cardH + gap);
 
     // 卡片背景
     ctx.fillStyle = '#1a1618';
@@ -1248,21 +1247,28 @@ async function handleGenerateImage() {
     }
 
     const textY = y + 12 + 260 + 8;
+    // 貨號
+    ctx.fillStyle = '#664';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(p.code || '', x + 12, textY + 14);
     // 商品名
     ctx.fillStyle = '#f0e8e8';
     ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(truncate(p.name, 20), x + 12, textY + 20);
+    ctx.fillText(truncate(p.name, 20), x + 12, textY + 32);
     // 尺寸
     ctx.fillStyle = '#997';
     ctx.font = '11px sans-serif';
-    ctx.fillText(truncate(`尺寸：${p.sizes}`, 28), x + 12, textY + 38);
+    ctx.fillText(truncate(`尺寸：${p.sizes}`, 28), x + 12, textY + 50);
     // 價格
     ctx.fillStyle = '#c9847a';
     ctx.font = 'bold 16px sans-serif';
-    ctx.fillText(p.price || '洽詢', x + 12, textY + 58);
+    ctx.fillText(p.price || '洽詢', x + 12, textY + 70);
   }
 
+  // 輸出到 img 標籤（手機長按可儲存）
+  const dataUrl = canvas.toDataURL('image/png');
+  document.getElementById('cardImg').src = dataUrl;
   document.getElementById('imgModal').style.display = 'block';
   showResult('✓ 圖片產生完成！', false);
   document.getElementById('imgBtn').disabled = selected.size === 0;
