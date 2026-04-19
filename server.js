@@ -161,7 +161,8 @@ setInterval(() => {
     if (s.time === now && !s.fired) {
       s.fired = true;
       const itemList = s.items.map(p => `・${p.name}（${p.code}）`).join('\n');
-      const liffUrl = 'https://liff.line.me/1657385678-5T9F9nca';
+      const codes = s.items.map(p => p.code).join(',');
+      const liffUrl = `https://liff.line.me/1657385678-5T9F9nca?codes=${encodeURIComponent(codes)}`;
       const msg = `⏰ 排程提醒！\n\n${s.label ? s.label + '\n' : ''}共 ${s.items.length} 件商品：\n${itemList}\n\n👉 點此開啟發送：${liffUrl}`;
       try {
         await fetch('https://api.line.me/v2/bot/message/push', {

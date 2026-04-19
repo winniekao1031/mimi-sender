@@ -834,6 +834,19 @@ async function loadProducts() {
   renderGrid();
   renderSelectedList();
   document.getElementById('totalCount').textContent = `${PRODUCTS.length} 件`;
+
+  // 自動勾選 URL 帶來的商品（排程提醒用）
+  const urlParams = new URLSearchParams(window.location.search);
+  const codesParam = urlParams.get('codes');
+  if (codesParam) {
+    const codesToSelect = codesParam.split(',').map(c => c.trim()).filter(Boolean);
+    codesToSelect.forEach(code => {
+      if (PRODUCTS.find(p => p.code === code)) selected.add(code);
+    });
+    renderGrid();
+    renderSelectedList();
+    if (codesToSelect.length > 0) showResult(`✓ 已自動選取 ${selected.size} 件排程商品`, false);
+  }
 }
 
 let selected = new Set();
