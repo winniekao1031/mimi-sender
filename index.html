@@ -32,6 +32,7 @@
     font-family: 'Noto Sans TC', sans-serif;
     font-size: 14px;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   /* ── Header ── */
@@ -540,18 +541,21 @@
   /* ── Responsive ── */
   @media (max-width: 768px) {
     /* 整體佈局 */
-    body { min-height: unset; overflow-x: hidden; }
+    html, body { height: 100%; overflow: hidden; }
+    body { min-height: unset; }
     .main {
       display: flex;
       flex-direction: column;
-      height: auto;
+      height: calc(100vh - 57px);
+      overflow: hidden;
     }
     .product-area {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       border-right: none;
       padding: 10px;
-      padding-bottom: 200px; /* 留給底部發送區 */
-      overflow-y: auto;
-      height: auto;
+      padding-bottom: 220px;
     }
 
     /* Header */
@@ -1445,11 +1449,17 @@ function showResult(msg, isError) {
 loadSettings();
 loadProducts();
 
-// 修正手機版底部空白
-if (window.innerWidth <= 768) {
-  document.body.style.minHeight = 'unset';
-  document.querySelector('.main').style.minHeight = 'unset';
+// 動態計算底部面板高度，避免空白
+function adjustBottomPadding() {
+  if (window.innerWidth > 768) return;
+  const panel = document.querySelector('.send-panel');
+  const area = document.querySelector('.product-area');
+  if (panel && area) {
+    area.style.paddingBottom = (panel.offsetHeight + 10) + 'px';
+  }
 }
+window.addEventListener('resize', adjustBottomPadding);
+setTimeout(adjustBottomPadding, 500);
 
 // 顏色選擇器更新
 document.getElementById('btnColor').addEventListener('input', function() {
