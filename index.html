@@ -1165,7 +1165,7 @@ async function handleGenerateImage() {
   // 建立畫布
   const cols = Math.min(items.length, 2);
   const cardW = 320;
-  const cardH = 420;
+  const cardH = 380;
   const gap = 12;
   const padX = 20;
   const padY = 20;
@@ -1207,27 +1207,47 @@ async function handleGenerateImage() {
     roundRect(ctx, x, y, cardW, cardH, 12);
     ctx.stroke();
 
-    // 圖片
+    // 圖片（保持比例，置中裁切）
     if (p.imageUrl) {
       try {
         const img = await loadImage(p.imageUrl);
-        const imgSize = cardW - 24;
+        const imgAreaW = cardW - 24;
+        const imgAreaH = 260;
+        const imgX = x + 12;
+        const imgY = y + 12;
+
+        // 計算 cover 裁切
+        const imgRatio = img.width / img.height;
+        const areaRatio = imgAreaW / imgAreaH;
+        let sx, sy, sw, sh;
+        if (imgRatio > areaRatio) {
+          sh = img.height;
+          sw = sh * areaRatio;
+          sx = (img.width - sw) / 2;
+          sy = 0;
+        } else {
+          sw = img.width;
+          sh = sw / areaRatio;
+          sx = 0;
+          sy = (img.height - sh) / 2;
+        }
+
         ctx.save();
-        roundRect(ctx, x + 12, y + 12, imgSize, imgSize, 8);
+        roundRect(ctx, imgX, imgY, imgAreaW, imgAreaH, 8);
         ctx.clip();
-        ctx.drawImage(img, x + 12, y + 12, imgSize, imgSize);
+        ctx.drawImage(img, sx, sy, sw, sh, imgX, imgY, imgAreaW, imgAreaH);
         ctx.restore();
       } catch(e) {
         ctx.fillStyle = '#231e21';
-        ctx.fillRect(x + 12, y + 12, cardW - 24, cardW - 24);
+        ctx.fillRect(x + 12, y + 12, cardW - 24, 260);
         ctx.fillStyle = '#555';
         ctx.font = '40px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('👗', x + cardW / 2, y + cardW / 2);
+        ctx.fillText('👗', x + cardW / 2, y + 140);
       }
     }
 
-    const textY = y + cardW - 8;
+    const textY = y + 12 + 260 + 8;
     // 商品名
     ctx.fillStyle = '#f0e8e8';
     ctx.font = 'bold 14px sans-serif';
