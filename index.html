@@ -643,11 +643,11 @@
     <label>發送群組</label>
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <input type="checkbox" id="grp1" value="Cd367658234cec557814382501a96697a" style="width:20px;height:20px;cursor:pointer;flex-shrink:0;accent-color:#c9a84c;" checked>
+        <input type="checkbox" id="grp1" value="Cd367658234cec557814382501a96697a" style="width:20px;height:20px;cursor:pointer;flex-shrink:0;accent-color:#c9847a;" checked>
         <span style="font-size:14px;color:#f0ead8;font-weight:500;">Olie Baby</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <input type="checkbox" id="grp2" value="C2e26b43bcee40547ac97a5da14071365" style="width:20px;height:20px;cursor:pointer;flex-shrink:0;accent-color:#c9a84c;" checked>
+        <input type="checkbox" id="grp2" value="C2e26b43bcee40547ac97a5da14071365" style="width:20px;height:20px;cursor:pointer;flex-shrink:0;accent-color:#c9847a;" checked>
         <span style="font-size:14px;color:#f0ead8;font-weight:500;">cutie 的服裝小舖</span>
       </div>
     </div>
@@ -695,30 +695,40 @@
       <div class="selected-empty">尚未選取商品</div>
     </div>
 
-    <div class="panel-section">
-      <div class="panel-title">顏色設定</div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:12px;color:var(--text-muted);">按鈕顏色</span>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="color" id="btnColor" value="#c9a84c" style="width:36px;height:28px;border:none;border-radius:4px;cursor:pointer;background:none;padding:0;">
-            <span id="btnColorText" style="font-size:11px;color:var(--text-dim);">#c9a84c</span>
+    <div class="panel-section" style="padding:0;">
+      <div onclick="toggleAccordion('colorBody')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;cursor:pointer;">
+        <div class="panel-title" style="margin:0;">顏色設定</div>
+        <span id="colorArrow" style="font-size:10px;color:var(--text-dim);transition:transform 0.2s;">▼</span>
+      </div>
+      <div id="colorBody" style="display:none;padding:0 18px 12px;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;color:var(--text-muted);">按鈕顏色</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="color" id="btnColor" value="#c9847a" style="width:36px;height:28px;border:none;border-radius:4px;cursor:pointer;background:none;padding:0;">
+              <span id="btnColorText" style="font-size:11px;color:var(--text-dim);">#c9847a</span>
+            </div>
           </div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:12px;color:var(--text-muted);">價錢顏色</span>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="color" id="priceColor" value="#c9a84c" style="width:36px;height:28px;border:none;border-radius:4px;cursor:pointer;background:none;padding:0;">
-            <span id="priceColorText" style="font-size:11px;color:var(--text-dim);">#c9a84c</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;color:var(--text-muted);">價錢顏色</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="color" id="priceColor" value="#c9847a" style="width:36px;height:28px;border:none;border-radius:4px;cursor:pointer;background:none;padding:0;">
+              <span id="priceColorText" style="font-size:11px;color:var(--text-dim);">#c9847a</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="panel-section">
-      <div class="panel-title">附加說明</div>
-      <div class="note-wrap">
-        <textarea id="noteInput" placeholder="例：本週新品上架！數量有限，喜歡請把握 🛍"></textarea>
+    <div class="panel-section" style="padding:0;">
+      <div onclick="toggleAccordion('noteBody')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;cursor:pointer;">
+        <div class="panel-title" style="margin:0;">附加說明</div>
+        <span id="noteArrow" style="font-size:10px;color:var(--text-dim);transition:transform 0.2s;">▼</span>
+      </div>
+      <div id="noteBody" style="display:none;padding:0 18px 12px;">
+        <div class="note-wrap" style="margin-top:0;">
+          <textarea id="noteInput" placeholder="例：本週新品上架！數量有限，喜歡請把握 🛍"></textarea>
+        </div>
       </div>
     </div>
 
@@ -937,8 +947,8 @@ function handleCopy() {
 
 // ── Send ──
 function buildFlexCarousel(items, note) {
-  const btnColorVal = document.getElementById('btnColor') ? document.getElementById('btnColor').value : '#c9a84c';
-  const priceColorVal = document.getElementById('priceColor') ? document.getElementById('priceColor').value : '#c9a84c';
+  const btnColorVal = document.getElementById('btnColor') ? document.getElementById('btnColor').value : '#c9847a';
+  const priceColorVal = document.getElementById('priceColor') ? document.getElementById('priceColor').value : '#c9847a';
   const today = new Date().toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
 
   const bubbles = items.map(p => {
@@ -1063,6 +1073,17 @@ async function handleSend() {
     document.getElementById('liffShareBtn').disabled = selected.size === 0;
   }
 }
+
+// ── 折疊面板 ──────────────────────────────────────
+function toggleAccordion(id) {
+  const body = document.getElementById(id);
+  const arrowId = id === 'colorBody' ? 'colorArrow' : 'noteArrow';
+  const arrow = document.getElementById(arrowId);
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+// ──────────────────────────────────────────────────
 
 // ── LIFF 分享功能 ──────────────────────────────────
 const LIFF_ID = '1657385678-5T9F9nca';
