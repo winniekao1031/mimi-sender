@@ -226,8 +226,12 @@
       <input type="text" id="customerName" placeholder="請填入姓名" />
     </div>
     <div class="field">
-      <label>LINE ID *</label>
-      <input type="text" id="customerId" placeholder="請填入 LINE ID" />
+      <label>LINE ID</label>
+      <input type="text" id="customerId" placeholder="請填入 LINE ID（選填）" />
+    </div>
+    <div class="field">
+      <label>備註</label>
+      <input type="text" id="orderNote" placeholder="例：請幫我包裝好一點" />
     </div>
   </div>
 
@@ -323,9 +327,9 @@ async function submitOrder() {
   const customerId = document.getElementById('customerId').value.trim();
   const errorEl = document.getElementById('errorMsg');
 
-  if (!selectedSize || !customerName || !customerId) {
+  if (!selectedSize || !customerName) {
     errorEl.style.display = 'block';
-    errorEl.textContent = !selectedSize ? '請選擇尺寸！' : '請填寫所有必填欄位！';
+    errorEl.textContent = !selectedSize ? '請選擇尺寸！' : '請填寫姓名！';
     return;
   }
 
@@ -333,14 +337,16 @@ async function submitOrder() {
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = '送出中...';
 
+  const note = document.getElementById('orderNote').value.trim();
   const orderData = {
     time: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
     code,
     name,
     size: selectedSize,
     customerName,
-    customerId,
-    price
+    customerId: document.getElementById('customerId').value.trim(),
+    price,
+    note
   };
 
   try {

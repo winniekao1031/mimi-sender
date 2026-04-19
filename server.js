@@ -51,7 +51,7 @@ app.post('/api/order', async (req, res) => {
     const notifyUserId = process.env.NOTIFY_USER_ID;
     
     if (token && notifyUserId) {
-      const msg = `🛍 新訂單！\n\n商品：${code} ${name}\n尺寸：${size}\n價格：${price}\n\n客人姓名：${customerName}\nLINE ID：${customerId}\n\n時間：${time}`;
+      const msg = `🛍 新訂單！\n\n商品：${code} ${name}\n尺寸：${size}\n價格：${price}\n\n客人姓名：${customerName}\nLINE ID：${customerId || '未填寫'}\n備註：${req.body.note || '無'}\n\n時間：${time}`;
       
       await fetch('https://api.line.me/v2/bot/message/push', {
         method: 'POST',
