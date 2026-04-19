@@ -631,6 +631,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
@@ -676,6 +677,19 @@
 </div>
 
 <!-- Main -->
+<!-- 圖片預覽 Modal -->
+<div id="imgModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999;overflow-y:auto;padding:20px;box-sizing:border-box;">
+  <div style="max-width:480px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="color:#fff;font-size:14px;font-weight:700;">📷 商品卡片預覽</span>
+      <button onclick="document.getElementById('imgModal').style.display='none'" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <canvas id="cardCanvas" style="width:100%;border-radius:12px;display:block;"></canvas>
+    <button id="downloadBtn" onclick="downloadCardImage()" style="width:100%;margin-top:12px;background:linear-gradient(135deg,#c9847a,#7a4a45);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">⬇️ 下載圖片</button>
+    <div style="color:#888;font-size:11px;text-align:center;margin-top:8px;">手機可長按圖片儲存，電腦按下載</div>
+  </div>
+</div>
+
 <div class="main">
 
   <!-- Left: Products -->
@@ -758,6 +772,7 @@
       <button class="send-btn" id="sendBtn" onclick="handleSend()" disabled>發送到 LINE 群組</button>
       <button class="send-btn" id="liffShareBtn" onclick="handleLiffShare()" disabled style="background:linear-gradient(135deg,#00B900,#00C800);margin-top:6px;">🟢 用 LINE 分享（不耗則數）</button>
       <button class="copy-btn" id="copyBtn" onclick="handleCopy()" disabled>📋 複製文字（貼到社群）</button>
+      <button class="copy-btn" id="imgBtn" onclick="handleGenerateImage()" disabled>🖼️ 產生商品卡圖片</button>
 
       <!-- 排程區 -->
       <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:2px;">
@@ -938,6 +953,7 @@ function renderSelectedList() {
   document.getElementById('sendBtn').disabled = n === 0;
   document.getElementById('liffShareBtn').disabled = n === 0;
   document.getElementById('copyBtn').disabled = n === 0;
+  document.getElementById('imgBtn').disabled = n === 0;
 }
 
 // ── Interactions ──
@@ -1137,6 +1153,138 @@ async function handleSend() {
     document.getElementById('liffShareBtn').disabled = selected.size === 0;
   }
 }
+
+// ── 產生商品卡圖片 ─────────────────────────────────
+async function handleGenerateImage() {
+  const items = PRODUCTS.filter(p => selected.has(p.code));
+  if (items.length === 0) { showResult('✗ 請先選取商品', true); return; }
+
+  showResult('產生圖片中...', false);
+  document.getElementById('imgBtn').disabled = true;
+
+  // 建立畫布
+  const cols = Math.min(items.length, 2);
+  const cardW = 320;
+  const cardH = 420;
+  const gap = 12;
+  const padX = 20;
+  const padY = 20;
+  const rows = Math.ceil(items.length / cols);
+  const canvasW = cols * cardW + (cols - 1) * gap + padX * 2;
+  const canvasH = rows * cardH + (rows - 1) * gap + padY * 2 + 60;
+
+  const canvas = document.getElementById('cardCanvas');
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+  const ctx = canvas.getContext('2d');
+
+  // 背景
+  ctx.fillStyle = '#0f0d0e';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // 標題
+  ctx.fillStyle = '#c9847a';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('哈摟米米童著 🛍', canvasW / 2, 36);
+
+  // 畫每張卡片
+  for (let i = 0; i < items.length; i++) {
+    const p = items[i];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = padX + col * (cardW + gap);
+    const y = padY + 50 + row * (cardH + gap);
+
+    // 卡片背景
+    ctx.fillStyle = '#1a1618';
+    roundRect(ctx, x, y, cardW, cardH, 12);
+    ctx.fill();
+
+    // 邊框
+    ctx.strokeStyle = '#322830';
+    ctx.lineWidth = 1;
+    roundRect(ctx, x, y, cardW, cardH, 12);
+    ctx.stroke();
+
+    // 圖片
+    if (p.imageUrl) {
+      try {
+        const img = await loadImage(p.imageUrl);
+        const imgSize = cardW - 24;
+        ctx.save();
+        roundRect(ctx, x + 12, y + 12, imgSize, imgSize, 8);
+        ctx.clip();
+        ctx.drawImage(img, x + 12, y + 12, imgSize, imgSize);
+        ctx.restore();
+      } catch(e) {
+        ctx.fillStyle = '#231e21';
+        ctx.fillRect(x + 12, y + 12, cardW - 24, cardW - 24);
+        ctx.fillStyle = '#555';
+        ctx.font = '40px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('👗', x + cardW / 2, y + cardW / 2);
+      }
+    }
+
+    const textY = y + cardW - 8;
+    // 商品名
+    ctx.fillStyle = '#f0e8e8';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(truncate(p.name, 20), x + 12, textY + 20);
+    // 尺寸
+    ctx.fillStyle = '#997';
+    ctx.font = '11px sans-serif';
+    ctx.fillText(truncate(`尺寸：${p.sizes}`, 28), x + 12, textY + 38);
+    // 價格
+    ctx.fillStyle = '#c9847a';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText(p.price || '洽詢', x + 12, textY + 58);
+  }
+
+  document.getElementById('imgModal').style.display = 'block';
+  showResult('✓ 圖片產生完成！', false);
+  document.getElementById('imgBtn').disabled = selected.size === 0;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+    setTimeout(() => reject(new Error('timeout')), 5000);
+  });
+}
+
+function truncate(str, max) {
+  return str && str.length > max ? str.slice(0, max) + '...' : (str || '');
+}
+
+function downloadCardImage() {
+  const canvas = document.getElementById('cardCanvas');
+  const a = document.createElement('a');
+  a.download = `米米商品卡_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+// ──────────────────────────────────────────────────
 
 // ── 排程功能 ──────────────────────────────────────
 async function addSchedule() {
