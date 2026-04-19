@@ -303,7 +303,7 @@
 
   .card-img-wrap {
     width: 100%;
-    height: 110px;
+    aspect-ratio: 1/1;
     background: var(--surface2);
     border-radius: 6px;
     margin-bottom: 8px;
@@ -314,8 +314,11 @@
     font-size: 28px;
     border: 1px solid var(--border);
     flex-shrink: 0;
+    position: relative;
   }
   .card-img-wrap img {
+    position: absolute;
+    top: 0; left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -571,7 +574,7 @@
     }
     .product-card { padding: 6px; }
     .card-check { width: 14px; height: 14px; margin-bottom: 4px; }
-    .card-img-wrap { height: auto !important; aspect-ratio: 1/1 !important; width: 100% !important; border-radius: 5px; }
+    .card-img-wrap { border-radius: 5px; }
     .card-code { font-size: 9px; }
     .card-name { font-size: 11px !important; -webkit-line-clamp: 2; margin-bottom: 3px; }
     .card-sizes { font-size: 10px !important; }
