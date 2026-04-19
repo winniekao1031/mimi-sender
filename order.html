@@ -280,7 +280,7 @@ async function loadProductData() {
   }
   // 填入畫面
   document.getElementById('productCode').textContent = code;
-  document.getElementById('productName').textContent = name || '商品資訊載入中...';
+  document.getElementById('productName').textContent = name || '找不到商品';
   document.getElementById('productPrice').textContent = price;
   if (cat) document.getElementById('productCat').textContent = `分類：${cat}`;
   if (imageUrl) {
@@ -290,7 +290,6 @@ async function loadProductData() {
   const sizeList = parseSizes(decodeURIComponent(sizes));
   renderSizes(sizeList);
 }
-loadProductData();
 
 // ── 解析尺寸 ──
 // 格式：「灰:5/7/9 黑:5/7」或「5/7/9/11」
@@ -385,6 +384,9 @@ async function submitOrder() {
     document.getElementById('submitBtn').textContent = '確認送出訂單';
   }
 }
+
+// 所有函數定義完才執行
+loadProductData();
 </script>
 </body>
 </html>
