@@ -16,6 +16,8 @@ function checkAuth(req, res, next) {
   // 以下路徑不需要驗證
   if (req.path === '/order.html' || req.path === '/api/order') return next();
   if (req.path.startsWith('/liff')) return next();
+  if (req.path.startsWith('/api/schedule')) return next();
+  if (req.path.startsWith('/api/product')) return next();
   
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Basic ')) {
