@@ -540,6 +540,7 @@
   /* ── Responsive ── */
   @media (max-width: 768px) {
     /* 整體佈局 */
+    body { min-height: unset; overflow-x: hidden; }
     .main {
       display: flex;
       flex-direction: column;
@@ -1443,6 +1444,12 @@ function showResult(msg, isError) {
 // ── Init ──
 loadSettings();
 loadProducts();
+
+// 修正手機版底部空白
+if (window.innerWidth <= 768) {
+  document.body.style.minHeight = 'unset';
+  document.querySelector('.main').style.minHeight = 'unset';
+}
 
 // 顏色選擇器更新
 document.getElementById('btnColor').addEventListener('input', function() {
