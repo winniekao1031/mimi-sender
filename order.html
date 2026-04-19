@@ -322,20 +322,24 @@ function parseSizes(sizeStr) {
 
 let selectedSize = '';
 
+let currentSizeList = [];
+
 function renderSizes(sizeList) {
+  currentSizeList = sizeList || [];
   const grid = document.getElementById('sizeGrid');
-  if (!sizeList || sizeList.length === 0) {
+  if (currentSizeList.length === 0) {
     grid.innerHTML = '<div style="color:#bbb;font-size:13px;">請私訊詢問尺寸</div>';
     return;
   }
-  grid.innerHTML = sizeList.map(s => `
-    <button class="size-btn ${selectedSize === s ? 'selected' : ''}" onclick="selectSize('${s}', ${JSON.stringify(sizeList)})">${s}</button>
+  grid.innerHTML = currentSizeList.map(s => `
+    <button class="size-btn ${selectedSize === s ? 'selected' : ''}" onclick="selectSize(this)">${s}</button>
   `).join('');
 }
 
-function selectSize(size, sizeList) {
-  selectedSize = size;
-  renderSizes(sizeList);
+function selectSize(btn) {
+  selectedSize = btn.textContent.trim();
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
 }
 
 // ── 送出訂單 ──
