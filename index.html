@@ -796,6 +796,7 @@
         <button class="copy-btn" id="copyBtn" onclick="handleCopy()" disabled style="flex:1;">📋 複製文字</button>
         <button class="copy-btn" id="imgBtn" onclick="handleGenerateImage()" disabled style="flex:1;">🖼️ 產生圖片</button>
       </div>
+      <button class="copy-btn" id="batchImgBtn" onclick="handleBatchDownload()" disabled>⬇️ 一鍵下載個別圖片</button>
 
       <!-- 排程區 -->
       <div style="border-top:1px solid var(--border);padding-top:6px;">
@@ -1029,6 +1030,8 @@ function renderSelectedList() {
   document.getElementById('liffShareBtn').disabled = n === 0;
   document.getElementById('copyBtn').disabled = n === 0;
   document.getElementById('imgBtn').disabled = n === 0;
+  const batchBtn = document.getElementById('batchImgBtn');
+  if (batchBtn) batchBtn.disabled = n === 0;
   // 更新浮動按鈕徽章
   const badge = document.getElementById('floatBadge');
   if (badge) badge.textContent = n;
@@ -1075,18 +1078,17 @@ function buildText() {
     text += `☑️ ${p.name} - ${shortCode}\n`;
     if (p.sizes) {
       text += `⬇️ 現貨可喊尺寸⬇️\n`;
-      // 按「顏色:」分行，例如「黑:5、7」「灰:9、11」
+      // 按「顏色:」分行，每行前加 ▸
       const parts = p.sizes.split(/(?=[\u4e00-\u9fa5A-Za-z]+:)/);
       parts.forEach(s => {
         const trimmed = s.trim();
-        if (trimmed) text += `${trimmed}\n`;
+        if (trimmed) text += `▸${trimmed}\n`;
       });
     }
     if (p.price) text += `💰 售價：${p.price}\n`;
     text += `🛒 立即訂購：https://mimi-sender.zeabur.app/order.html?code=${encodeURIComponent(p.code||'')}`;
   });
   text += `\n\n${'─'.repeat(20)}\n`;
-  text += `📩 私訊闆娘：LINE ID chami_1031\n`;
   text += `🏪 官方帳號：@hellomimi`;
   return text;
 }
@@ -1401,6 +1403,113 @@ function downloadCardImage() {
   a.href = canvas.toDataURL('image/png');
   a.click();
 }
+
+// ── 一鍵批次下載個別商品圖 ───────────────────────
+async function handleBatchDownload() {
+  const items = PRODUCTS.filter(p => selected.has(p.code));
+  if (items.length === 0) { showResult('✗ 請先選取商品', true); return; }
+
+  if (!confirm(`將產生並下載 ${items.length} 張商品卡圖片，確認繼續？`)) return;
+
+  document.getElementById('batchImgBtn').disabled = true;
+
+  const dpr = 3;
+  const cardW = 360;
+  const cardH = 540;
+
+  for (let i = 0; i < items.length; i++) {
+    const p = items[i];
+    showResult(`產生中... ${i+1}/${items.length}`, false);
+
+    // 為每個商品建立單獨畫布
+    const canvas = document.createElement('canvas');
+    canvas.width = cardW * dpr;
+    canvas.height = cardH * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    // 背景
+    ctx.fillStyle = '#1a1618';
+    ctx.fillRect(0, 0, cardW, cardH);
+
+    // 邊框
+    ctx.strokeStyle = '#322830';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, cardW, cardH);
+
+    // 圖片（1:1 正方形 cover）
+    const imgAreaW = cardW - 24;
+    const imgAreaH = 400;
+    const imgX = 12;
+    const imgY = 12;
+
+    if (p.imageUrl) {
+      try {
+        const img = await loadImage(p.imageUrl);
+        const imgRatio = img.width / img.height;
+        const areaRatio = imgAreaW / imgAreaH;
+        let sx, sy, sw, sh;
+        if (imgRatio > areaRatio) {
+          sh = img.height;
+          sw = sh * areaRatio;
+          sx = (img.width - sw) / 2;
+          sy = 0;
+        } else {
+          sw = img.width;
+          sh = sw / areaRatio;
+          sx = 0;
+          sy = (img.height - sh) / 2;
+        }
+        ctx.save();
+        roundRect(ctx, imgX, imgY, imgAreaW, imgAreaH, 8);
+        ctx.clip();
+        ctx.drawImage(img, sx, sy, sw, sh, imgX, imgY, imgAreaW, imgAreaH);
+        ctx.restore();
+      } catch(e) {
+        ctx.fillStyle = '#231e21';
+        ctx.fillRect(imgX, imgY, imgAreaW, imgAreaH);
+        ctx.fillStyle = '#555';
+        ctx.font = '60px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('👗', cardW / 2, imgY + imgAreaH / 2 + 20);
+      }
+    }
+
+    // 文字
+    const textY = imgY + imgAreaH + 8;
+    ctx.fillStyle = '#664';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(p.code || '', 14, textY + 18);
+
+    ctx.fillStyle = '#f0e8e8';
+    ctx.font = 'bold 17px sans-serif';
+    ctx.fillText(truncate(p.name, 22), 14, textY + 40);
+
+    ctx.fillStyle = '#997';
+    ctx.font = '13px sans-serif';
+    ctx.fillText(truncate(`尺寸：${p.sizes}`, 30), 14, textY + 62);
+
+    ctx.fillStyle = '#c9847a';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText(p.price || '洽詢', 14, textY + 88);
+
+    // 下載
+    const a = document.createElement('a');
+    a.download = `${p.code || 'item'}_${(p.name || '').replace(/[\/\\?%*:|"<>]/g,'').slice(0,15)}.png`;
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // 等一下讓瀏覽器處理下載，避免卡住
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  showResult(`✓ 已下載 ${items.length} 張商品圖！`, false);
+  document.getElementById('batchImgBtn').disabled = selected.size === 0;
+}
+// ──────────────────────────────────────────────────
 // ──────────────────────────────────────────────────
 
 // ── 排程功能 ──────────────────────────────────────
