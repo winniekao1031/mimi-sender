@@ -540,22 +540,21 @@
 
   /* ── Responsive ── */
   @media (max-width: 768px) {
-    /* 整體佈局 */
-    html, body { height: 100%; overflow: hidden; }
-    body { min-height: unset; }
+    /* 整體佈局 - 自然流動 */
+    html, body { height: auto; min-height: 100%; }
+    body { overflow-x: hidden; }
     .main {
       display: flex;
       flex-direction: column;
-      height: calc(100dvh - 57px);
-      overflow: hidden;
+      height: auto;
+      min-height: unset;
     }
     .product-area {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
       border-right: none;
       padding: 10px;
-      padding-bottom: 220px;
+      padding-bottom: 80px; /* 留位置給浮動按鈕 */
+      height: auto;
+      overflow: visible;
     }
 
     /* Header */
@@ -580,7 +579,7 @@
     .count-badge { font-size: 11px; }
     .search-bar input { font-size: 13px; padding: 8px 12px; }
 
-    /* 商品格線：2欄，圖片1:1縮小版 */
+    /* 商品格線：2欄 */
     .product-grid {
       grid-template-columns: repeat(2, 1fr) !important;
       gap: 6px;
@@ -596,43 +595,95 @@
     .card-cat { display: inline-block !important; font-size: 8px !important; padding: 1px 4px !important; }
     .card-bottom { margin-top: 3px; }
 
-    /* 發送區塊：固定在底部 */
-    .send-panel {
+    /* 手機版預設隱藏原本的 send-panel */
+    .send-panel { display: none; }
+
+    /* 浮動按鈕（手機版才顯示） */
+    .float-send-btn {
+      display: flex !important;
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-height: 55vh;
+      bottom: 16px;
+      right: 16px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      z-index: 300;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .float-send-btn .count-badge-num {
+      background: #fff;
+      color: var(--gold-dim);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* 彈出面板 */
+    .send-panel.popup-open {
+      display: flex !important;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      max-height: 80vh;
       background: var(--surface);
       border-top: 1px solid var(--border);
-      z-index: 200;
+      border-radius: 16px 16px 0 0;
+      z-index: 400;
+      flex-direction: column;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.6);
+      overflow-y: auto;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 350;
+    }
+    .popup-overlay.show { display: block; }
+    .popup-close-btn {
+      display: flex;
+      justify-content: flex-end;
+      padding: 8px 14px 0;
+    }
+    .popup-close-btn button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .send-panel .panel-section { display: none; }
+    .selected-list { display: none; }
+    .send-actions {
+      padding: 10px 14px 20px;
+      gap: 6px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
-      overflow: hidden;
     }
-    .send-actions {
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    /* 折疊標題列超緊湊 */
-    .send-panel .panel-section { padding: 0; }
-    .send-panel [onclick] { padding: 7px 14px !important; }
-    .panel-title { font-size: 10px; margin-bottom: 0; }
-    .mode-btn { font-size: 11px; padding: 6px 4px; }
-
-    /* 手機版：隱藏已選清單和所有折疊區 */
-    .selected-list { display: none; }
-    .send-panel .panel-section { display: none; }
-    .note-wrap { margin-top: 0; }
-    .note-wrap textarea { height: 46px; font-size: 12px; }
-
-    .send-actions { padding: 6px 12px 10px; gap: 5px; }
-    .send-count-text { font-size: 11px; }
-    .send-btn { padding: 10px; font-size: 13px; }
-    .copy-btn { padding: 7px; font-size: 11px; }
+    .send-count-text { font-size: 12px; }
+    .send-btn { padding: 11px; font-size: 13px; }
+    .copy-btn { padding: 8px; font-size: 12px; }
     .result-msg { font-size: 11px; }
+    .note-wrap textarea { height: 46px; font-size: 12px; }
   }
+
+  /* 電腦版隱藏浮動按鈕 */
+  .float-send-btn { display: none; }
 
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 5px; }
@@ -699,6 +750,13 @@
   </div>
 </div>
 
+<!-- 浮動發送按鈕（手機版） -->
+<button class="float-send-btn" onclick="openSendPanel()">
+  🛍 <span>發送</span>
+  <span class="count-badge-num" id="floatBadge">0</span>
+</button>
+<div class="popup-overlay" id="popupOverlay" onclick="closeSendPanel()"></div>
+
 <div class="main">
 
   <!-- Left: Products -->
@@ -718,7 +776,8 @@
   </div>
 
   <!-- Right: Send Panel -->
-  <div class="send-panel">
+  <div class="send-panel" id="sendPanel">
+    <div class="popup-close-btn"><button onclick="closeSendPanel()">✕</button></div>
 
     <div class="panel-section" style="padding-bottom:8px;">
       <div class="panel-title">已選商品</div>
@@ -970,6 +1029,9 @@ function renderSelectedList() {
   document.getElementById('liffShareBtn').disabled = n === 0;
   document.getElementById('copyBtn').disabled = n === 0;
   document.getElementById('imgBtn').disabled = n === 0;
+  // 更新浮動按鈕徽章
+  const badge = document.getElementById('floatBadge');
+  if (badge) badge.textContent = n;
 }
 
 // ── Interactions ──
@@ -1169,6 +1231,17 @@ async function handleSend() {
     document.getElementById('liffShareBtn').disabled = selected.size === 0;
   }
 }
+
+// ── 手機版彈出發送面板 ─────────────────────────────
+function openSendPanel() {
+  document.getElementById('sendPanel').classList.add('popup-open');
+  document.getElementById('popupOverlay').classList.add('show');
+}
+function closeSendPanel() {
+  document.getElementById('sendPanel').classList.remove('popup-open');
+  document.getElementById('popupOverlay').classList.remove('show');
+}
+// ──────────────────────────────────────────────────
 
 // ── 產生商品卡圖片 ─────────────────────────────────
 async function handleGenerateImage() {
