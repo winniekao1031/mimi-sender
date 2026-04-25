@@ -994,7 +994,7 @@ function renderGrid() {
         <span class="card-code">${p.code}</span>
       </div>
       <div class="card-img-wrap">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" onerror="this.style.display='none'">` : '👗'}
+        ${p.imageUrl ? `<img src="${p.imageUrl.startsWith('https://lh3.googleusercontent.com') ? '/api/imgproxy?url=' + encodeURIComponent(p.imageUrl) : p.imageUrl}" alt="${p.name}" loading="lazy" onerror="this.style.display='none'">` : '👗'}
       </div>
       <div class="card-name">${p.name}</div>
       <div class="card-sizes">${p.sizes}</div>
