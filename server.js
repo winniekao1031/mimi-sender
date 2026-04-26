@@ -259,6 +259,8 @@ app.get('/api/imgproxy', async (req, res) => {
     const r = await fetch(url);
     const buf = await r.arrayBuffer();
     const ct = r.headers.get('content-type') || 'image/jpeg';
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     res.set('Content-Type', ct);
     res.set('Cache-Control', 'public, max-age=86400');
     res.send(Buffer.from(buf));

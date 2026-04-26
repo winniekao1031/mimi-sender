@@ -1385,10 +1385,11 @@ function loadImage(src) {
     const proxySrc = src.startsWith('https://lh3.googleusercontent.com')
       ? `/api/imgproxy?url=${encodeURIComponent(src)}`
       : src;
+    img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = proxySrc;
-    setTimeout(() => reject(new Error('timeout')), 8000);
+    setTimeout(() => reject(new Error('timeout')), 10000);
   });
 }
 
