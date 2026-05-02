@@ -899,6 +899,10 @@ async function loadProducts() {
           const name = getVal(COL.name);
           if (!barcode || !name || barcode === '條碼') continue;
 
+          // 尺寸為空 = 商品已全部售完，不顯示
+          const sizes = getVal(COL.sizes);
+          if (!sizes) continue;
+
           const priceRaw = getVal(COL.price);
           const price = priceRaw ? (priceRaw.startsWith('$') ? priceRaw : `$${priceRaw}`) : '';
 
@@ -906,7 +910,7 @@ async function loadProducts() {
             code: barcode,
             name: name,
             price: price,
-            sizes: getVal(COL.sizes),
+            sizes: sizes,
             cat: getVal(COL.cat) || sheetName,
             catDisplay: (getVal(COL.cat) || sheetName).replace(/-\d+$/, ''),
             imageUrl: getVal(COL.imageUrl),
