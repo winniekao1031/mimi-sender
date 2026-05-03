@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品詳情 ｜ 哈摟米米童著</title>
+<!-- OGP tags 由 server.js 動態注入 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f1;
+    --bg-alt: #f3ece2;
+    --paper: #ffffff;
+    --ink: #2a221d;
+    --ink-soft: #6b5a4f;
+    --rose: #c9847a;
+    --rose-deep: #a8625a;
+    --rose-soft: #f3d9d3;
+    --line-c: #e8ddd0;
+    --shadow: 0 4px 24px rgba(168, 98, 90, 0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line-c);
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 6px 10px;
+    font-family: inherit;
+  }
+  .brand {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+  .cart-btn {
+    position: relative;
+    background: var(--rose);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cart-badge {
+    background: white;
+    color: var(--rose-deep);
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 16px 120px;
+  }
+  .product-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 768px) {
+    .product-layout { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+
+  .img-wrap {
+    background: var(--paper);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    aspect-ratio: 1;
+    position: relative;
+  }
+  .img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .cat-tag {
+    display: inline-block;
+    background: var(--rose-soft);
+    color: var(--rose-deep);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    align-self: flex-start;
+  }
+  .name {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .code {
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+    font-family: 'SF Mono', Monaco, monospace;
+  }
+  .price {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 32px;
+    color: var(--rose-deep);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .price::before {
+    content: 'NT$';
+    font-size: 14px;
+    font-weight: 400;
+    margin-right: 4px;
+    vertical-align: 4px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 2px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line-c);
+  }
+
+  .sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .size-chip {
+    background: var(--paper);
+    border: 1.5px solid var(--line-c);
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    min-width: 60px;
+    text-align: center;
+  }
+  .size-chip:hover:not(.disabled) { border-color: var(--rose); }
+  .size-chip.active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+  .size-chip.disabled {
+    color: #c0b5a8;
+    background: var(--bg-alt);
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+  .size-stock {
+    font-size: 10px;
+    margin-left: 4px;
+    opacity: 0.7;
+  }
+
+  .qty-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .qty-control {
+    display: flex;
+    align-items: center;
+    background: var(--paper);
+    border: 1.5px solid var(--line-c);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .qty-btn {
+    background: none;
+    border: none;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .qty-btn:hover { background: var(--bg-alt); }
+  .qty-val {
+    width: 40px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--rose);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--rose-deep); }
+  .btn-secondary {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+  }
+  .btn-secondary:hover { background: var(--ink); color: white; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .notice {
+    background: var(--rose-soft);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--rose-deep);
+    line-height: 1.7;
+    margin-top: 8px;
+  }
+  .notice strong { display: block; margin-bottom: 4px; font-size: 13px; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-size: 14px;
+    z-index: 100;
+    transition: transform 0.3s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .loading-state {
+    text-align: center;
+    padding: 100px 16px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <button class="back-btn" onclick="location.href='/shop'">‹ 返回商品館</button>
+    <span class="brand">哈摟米米童著</span>
+    <button class="cart-btn" onclick="location.href='/cart'">
+      🛒 <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+  <div id="loadingState" class="loading-state">商品載入中⋯</div>
+  <div id="productView" style="display:none;">
+    <div class="product-layout">
+      <div class="img-wrap">
+        <img id="productImg" src="" alt="">
+      </div>
+      <div class="info">
+        <span class="cat-tag" id="catTag"></span>
+        <h1 class="name" id="productName"></h1>
+        <div class="code" id="productCode"></div>
+        <div class="price" id="productPrice"></div>
+
+        <div class="section-title">選擇尺寸</div>
+        <div class="sizes" id="sizesList"></div>
+
+        <div class="section-title">數量</div>
+        <div class="qty-row">
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <span class="qty-val" id="qtyVal">1</span>
+            <button class="qty-btn" onclick="changeQty(1)">＋</button>
+          </div>
+        </div>
+
+        <div class="notice">
+          <strong>溫馨提醒</strong>
+          ※ 滿$600 超商免運（7-11 $38 / 全家 $35）<br>
+          ※ 滿$1000 宅配免運（新竹貨運 $80）<br>
+          ※ 台中北屯東光路850號 自取免運
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="addToCart(false)">加入購物車</button>
+          <button class="btn btn-primary" onclick="addToCart(true)">直接結帳</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">已加入購物車</div>
+
+<script>
+  let product = null;
+  let selectedSize = null;
+  let qty = 1;
+
+  function getCodeFromUrl() {
+    const path = window.location.pathname;
+    const m = path.match(/\/shop\/(.+)$/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  async function loadProduct() {
+    const code = getCodeFromUrl();
+    if (!code) {
+      document.getElementById('loadingState').textContent = '找不到商品';
+      return;
+    }
+    try {
+      const res = await fetch(`/api/product?code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+      if (!data.success || !data.product) throw new Error('not found');
+      product = data.product;
+      renderProduct();
+    } catch (e) {
+      document.getElementById('loadingState').textContent = '商品已下架或不存在';
+      console.error(e);
+    }
+  }
+
+  function parseSizes(sizesStr) {
+    // 解析尺寸字串，例如：「黑/M:5,L:3,XL:0」
+    if (!sizesStr) return [];
+    const items = [];
+    const lines = String(sizesStr).split(/[,\n]/);
+    lines.forEach(line => {
+      const t = line.trim();
+      if (!t) return;
+      const m = t.match(/^(.+?)[:：](\d+)$/);
+      if (m) {
+        items.push({ label: m[1].trim(), stock: parseInt(m[2], 10) });
+      } else {
+        items.push({ label: t, stock: null });
+      }
+    });
+    return items;
+  }
+
+  function renderProduct() {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('productView').style.display = 'block';
+
+    const cleanCat = (product.cat || '').replace(/-\d+$/, '').trim();
+    document.getElementById('catTag').textContent = cleanCat || '商品';
+    document.getElementById('productName').textContent = product.name || '';
+    document.getElementById('productCode').textContent = product.barcode || '';
+    document.getElementById('productPrice').textContent = product.price || '0';
+    document.title = `${product.name} ｜ 哈摟米米童著`;
+
+    const imgUrl = product.imageUrl
+      ? `/api/imgproxy?url=${encodeURIComponent(product.imageUrl)}`
+      : '';
+    document.getElementById('productImg').src = imgUrl;
+    document.getElementById('productImg').alt = product.name;
+
+    const sizes = parseSizes(product.sizes);
+    const list = document.getElementById('sizesList');
+    list.innerHTML = '';
+    if (sizes.length === 0) {
+      list.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">尺寸資訊請洽客服</div>';
+    } else {
+      sizes.forEach((s, i) => {
+        const chip = document.createElement('button');
+        chip.className = 'size-chip';
+        const isOut = s.stock !== null && s.stock <= 0;
+        if (isOut) chip.classList.add('disabled');
+        chip.innerHTML = `${s.label}${s.stock !== null ? `<span class="size-stock">(${s.stock})</span>` : ''}`;
+        chip.disabled = isOut;
+        chip.onclick = () => {
+          if (isOut) return;
+          document.querySelectorAll('.size-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          selectedSize = s.label;
+        };
+        list.appendChild(chip);
+      });
+    }
+  }
+
+  function changeQty(delta) {
+    qty = Math.max(1, qty + delta);
+    document.getElementById('qtyVal').textContent = qty;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function addToCart(goCheckout) {
+    if (!selectedSize) {
+      showToast('請選擇尺寸');
+      return;
+    }
+    const cart = JSON.parse(localStorage.getItem('mimi_cart') || '[]');
+    const key = `${product.barcode}__${selectedSize}`;
+    const existing = cart.find(i => i.key === key);
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      cart.push({
+        key,
+        barcode: product.barcode,
+        name: product.name,
+        size: selectedSize,
+        price: parseInt(product.price, 10) || 0,
+        qty,
+        imageUrl: product.imageUrl || ''
+      });
+    }
+    localStorage.setItem('mimi_cart', JSON.stringify(cart));
+    updateCartBadge();
+    if (goCheckout) {
+      location.href = '/cart';
+    } else {
+      showToast('已加入購物車');
+    }
+  }
+
+  function updateCartBadge() {
+    try {
+      const cart = JSON.parse(localStorage.getItem('mimi_cart') || '[]');
+      const count = cart.reduce((s, i) => s + (i.qty || 1), 0);
+      document.getElementById('cartBadge').textContent = count;
+    } catch (e) {
+      document.getElementById('cartBadge').textContent = '0';
+    }
+  }
+
+  loadProduct();
+  updateCartBadge();
+</script>
+
+</body>
+</html>

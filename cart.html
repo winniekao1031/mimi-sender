@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>購物車 ｜ 哈摟米米童著</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f1;
+    --bg-alt: #f3ece2;
+    --paper: #ffffff;
+    --ink: #2a221d;
+    --ink-soft: #6b5a4f;
+    --rose: #c9847a;
+    --rose-deep: #a8625a;
+    --rose-soft: #f3d9d3;
+    --line-c: #e8ddd0;
+    --shadow: 0 4px 24px rgba(168, 98, 90, 0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  .header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line-c);
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .title {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+  .spacer { width: 60px; }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 16px 200px;
+  }
+
+  .empty-cart {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--paper);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+  .empty-cart-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+  .empty-cart-text {
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  .go-shop {
+    display: inline-block;
+    background: var(--rose);
+    color: white;
+    padding: 12px 32px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .item-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .item {
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 14px;
+    box-shadow: var(--shadow);
+  }
+  .item-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--bg-alt);
+  }
+  .item-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .item-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .item-meta {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+  }
+  .item-price {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    color: var(--rose-deep);
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+    font-family: inherit;
+  }
+  .remove-btn:hover { color: var(--rose-deep); }
+  .qty-control {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .qty-btn {
+    background: none;
+    border: none;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .qty-val {
+    width: 32px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .summary {
+    background: var(--paper);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .summary-row.total {
+    border-top: 1px solid var(--line-c);
+    margin-top: 8px;
+    padding-top: 12px;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 17px;
+  }
+  .summary-row.total span:last-child {
+    font-family: 'Noto Serif TC', serif;
+    color: var(--rose-deep);
+    font-size: 22px;
+  }
+
+  .ship-section {
+    background: var(--paper);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .section-label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .ship-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .ship-opt {
+    background: var(--bg);
+    border: 1.5px solid var(--line-c);
+    border-radius: 12px;
+    padding: 12px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .ship-opt:hover { border-color: var(--rose); }
+  .ship-opt.active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+  .ship-opt-name {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .ship-opt-fee {
+    font-size: 11px;
+    opacity: 0.7;
+    letter-spacing: 1px;
+  }
+
+  .checkout-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--paper);
+    border-top: 1px solid var(--line-c);
+    padding: 14px 16px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+    z-index: 50;
+  }
+  .checkout-bar-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .total-display {
+    flex: 1;
+  }
+  .total-display .label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+  }
+  .total-display .amount {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--rose-deep);
+  }
+  .total-display .amount::before {
+    content: 'NT$';
+    font-size: 12px;
+    font-weight: 400;
+    margin-right: 2px;
+    vertical-align: 2px;
+  }
+  .checkout-btn {
+    background: var(--rose);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .checkout-btn:hover { background: var(--rose-deep); }
+  .checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <button class="back-btn" onclick="history.back()">‹ 返回</button>
+    <span class="title">購 物 車</span>
+    <span class="spacer"></span>
+  </div>
+</header>
+
+<div class="container" id="container">
+  <!-- 內容由 JS 動態渲染 -->
+</div>
+
+<div class="checkout-bar" id="checkoutBar" style="display:none;">
+  <div class="checkout-bar-inner">
+    <div class="total-display">
+      <div class="label">應付金額</div>
+      <div class="amount" id="finalAmount">0</div>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="goCheckout()">前往結帳</button>
+  </div>
+</div>
+
+<script>
+  const SHIP_OPTIONS = [
+    { id: 'pickup', name: '店面自取', fee: 0,  free: 0,    note: '台中北屯' },
+    { id: 'home',   name: '宅配新竹', fee: 80, free: 1000, note: '滿$1000免運' },
+    { id: '711',    name: '7-11取貨', fee: 38, free: 600,  note: '滿$600免運' },
+    { id: 'fami',   name: '全家取貨', fee: 35, free: 600,  note: '滿$600免運' },
+  ];
+
+  function getCart() {
+    try { return JSON.parse(localStorage.getItem('mimi_cart') || '[]'); }
+    catch (e) { return []; }
+  }
+  function saveCart(c) { localStorage.setItem('mimi_cart', JSON.stringify(c)); }
+  function getShipMethod() { return localStorage.getItem('mimi_ship') || 'pickup'; }
+  function setShipMethod(m) { localStorage.setItem('mimi_ship', m); }
+
+  function calcShipFee(subtotal, methodId) {
+    const opt = SHIP_OPTIONS.find(s => s.id === methodId) || SHIP_OPTIONS[0];
+    if (opt.free && subtotal >= opt.free) return 0;
+    return opt.fee;
+  }
+
+  function render() {
+    const container = document.getElementById('container');
+    const cart = getCart();
+    const checkoutBar = document.getElementById('checkoutBar');
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="empty-cart">
+          <div class="empty-cart-icon">🛒</div>
+          <div class="empty-cart-text">購物車空空的，快去逛逛吧！</div>
+          <button class="go-shop" onclick="location.href='/shop'">前往商品館</button>
+        </div>
+      `;
+      checkoutBar.style.display = 'none';
+      return;
+    }
+
+    let subtotal = 0;
+    let itemsHtml = '';
+    cart.forEach((item, idx) => {
+      const lineTotal = item.price * item.qty;
+      subtotal += lineTotal;
+      const imgUrl = item.imageUrl ? `/api/imgproxy?url=${encodeURIComponent(item.imageUrl)}` : '';
+      itemsHtml += `
+        <div class="item">
+          <img class="item-img" src="${imgUrl}" alt="${item.name}">
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-meta">${item.barcode} · ${item.size}</div>
+            <div class="item-price">NT$ ${item.price}</div>
+            <div class="qty-control" style="margin-top:6px;align-self:flex-start;">
+              <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
+              <span class="qty-val">${item.qty}</span>
+              <button class="qty-btn" onclick="changeQty(${idx}, 1)">＋</button>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="remove-btn" onclick="removeItem(${idx})">移除</button>
+          </div>
+        </div>
+      `;
+    });
+
+    const shipMethod = getShipMethod();
+    const shipFee = calcShipFee(subtotal, shipMethod);
+    const total = subtotal + shipFee;
+
+    let shipGridHtml = '';
+    SHIP_OPTIONS.forEach(opt => {
+      const active = opt.id === shipMethod ? 'active' : '';
+      const feeText = opt.fee === 0 ? '免運' : `運費 $${opt.fee}`;
+      shipGridHtml += `
+        <button class="ship-opt ${active}" onclick="selectShip('${opt.id}')">
+          <div class="ship-opt-name">${opt.name}</div>
+          <div class="ship-opt-fee">${feeText}</div>
+        </button>
+      `;
+    });
+
+    container.innerHTML = `
+      <div class="item-list">${itemsHtml}</div>
+
+      <div class="ship-section">
+        <div class="section-label">運送方式</div>
+        <div class="ship-grid">${shipGridHtml}</div>
+      </div>
+
+      <div class="summary">
+        <div class="summary-row">
+          <span>商品小計</span>
+          <span>NT$ ${subtotal}</span>
+        </div>
+        <div class="summary-row">
+          <span>運費</span>
+          <span>${shipFee === 0 ? '免運' : 'NT$ ' + shipFee}</span>
+        </div>
+        <div class="summary-row total">
+          <span>合計</span>
+          <span>${total}</span>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('finalAmount').textContent = total;
+    checkoutBar.style.display = 'block';
+  }
+
+  function changeQty(idx, delta) {
+    const cart = getCart();
+    if (!cart[idx]) return;
+    cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+    saveCart(cart);
+    render();
+  }
+  function removeItem(idx) {
+    const cart = getCart();
+    cart.splice(idx, 1);
+    saveCart(cart);
+    render();
+  }
+  function selectShip(id) {
+    setShipMethod(id);
+    render();
+  }
+  function goCheckout() {
+    if (getCart().length === 0) return;
+    location.href = '/checkout';
+  }
+
+  render();
+</script>
+
+</body>
+</html>
