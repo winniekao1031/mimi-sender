@@ -433,9 +433,31 @@
   function changeQty(idx, delta) {
     const cart = getCart();
     if (!cart[idx]) return;
-    cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+    const newQty = cart[idx].qty + delta;
+    if (newQty < 1) return;
+    // 庫存上限檢查
+    const stock = cart[idx].stock;
+    if (stock !== null && stock !== undefined && newQty > stock) {
+      showToast(`此尺寸庫存只剩 ${stock} 件`);
+      return;
+    }
+    cart[idx].qty = newQty;
     saveCart(cart);
     render();
+  }
+
+  function showToast(msg) {
+    let t = document.getElementById('toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'toast';
+      t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2a221d;color:#fff;padding:12px 24px;border-radius:999px;font-size:14px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.2s;pointer-events:none;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 1800);
   }
   function removeItem(idx) {
     const cart = getCart();

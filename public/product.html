@@ -344,6 +344,7 @@
 <script>
   let product = null;
   let selectedSize = null;
+  let selectedStock = null;  // 🆕 目前選中尺寸的庫存（null 表示未知，可不限數量）
   let qty = 1;
 
   function getCodeFromUrl() {
@@ -452,6 +453,12 @@
           document.querySelectorAll('.size-chip').forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
           selectedSize = s.label;
+          selectedStock = s.stock;  // 🆕 記住此尺寸的庫存
+          // 切換尺寸時，若目前數量超過新尺寸庫存，自動降回庫存上限
+          if (selectedStock !== null && qty > selectedStock) {
+            qty = selectedStock;
+            document.getElementById('qtyVal').textContent = qty;
+          }
         };
         list.appendChild(chip);
       });
@@ -459,7 +466,19 @@
   }
 
   function changeQty(delta) {
-    qty = Math.max(1, qty + delta);
+    // 還沒選尺寸時，提醒先選尺寸
+    if (delta > 0 && !selectedSize) {
+      showToast('請先選擇尺寸');
+      return;
+    }
+    const newQty = qty + delta;
+    if (newQty < 1) return;
+    // 庫存上限檢查
+    if (selectedStock !== null && newQty > selectedStock) {
+      showToast(`此尺寸庫存只剩 ${selectedStock} 件`);
+      return;
+    }
+    qty = newQty;
     document.getElementById('qtyVal').textContent = qty;
   }
 
@@ -479,7 +498,14 @@
     const key = `${product.barcode}__${selectedSize}`;
     const existing = cart.find(i => i.key === key);
     if (existing) {
-      existing.qty += qty;
+      // 已在購物車中：累加但不超過庫存
+      const total = existing.qty + qty;
+      if (selectedStock !== null && total > selectedStock) {
+        showToast(`購物車已有 ${existing.qty} 件，此尺寸庫存只剩 ${selectedStock} 件`);
+        return;
+      }
+      existing.qty = total;
+      existing.stock = selectedStock;  // 同步最新庫存資訊
     } else {
       cart.push({
         key,
@@ -488,6 +514,7 @@
         size: selectedSize,
         price: parseInt(product.price, 10) || 0,
         qty,
+        stock: selectedStock,  // 🆕 把庫存記在購物車
         imageUrl: product.imageUrl || ''
       });
     }
