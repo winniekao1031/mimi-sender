@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>結帳 ｜ 哈摟米米童著</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f1;
+    --bg-alt: #f3ece2;
+    --paper: #ffffff;
+    --ink: #2a221d;
+    --ink-soft: #6b5a4f;
+    --rose: #c9847a;
+    --rose-deep: #a8625a;
+    --rose-soft: #f3d9d3;
+    --line-c: #e8ddd0;
+    --shadow: 0 4px 24px rgba(168, 98, 90, 0.08);
+    --error: #d05050;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  .header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line-c);
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .title {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+  .spacer { width: 60px; }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 16px 200px;
+  }
+
+  .step-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+  }
+  .step.active { color: var(--rose-deep); font-weight: 700; }
+  .step::before {
+    content: '○ ';
+  }
+  .step.active::before { content: '● '; }
+
+  .panel {
+    background: var(--paper);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .panel-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-c);
+    letter-spacing: 2px;
+  }
+
+  /* Order summary */
+  .order-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-c);
+  }
+  .order-item:last-child { border-bottom: none; }
+  .order-item-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg-alt);
+    flex-shrink: 0;
+  }
+  .order-item-info { flex: 1; min-width: 0; }
+  .order-item-name {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+  .order-item-meta {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+  }
+  .order-item-price {
+    font-size: 13px;
+    color: var(--rose-deep);
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .summary-rows { margin-top: 12px; }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .summary-row.total {
+    border-top: 1px solid var(--line-c);
+    margin-top: 8px;
+    padding-top: 12px;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .summary-row.total span:last-child {
+    font-family: 'Noto Serif TC', serif;
+    color: var(--rose-deep);
+    font-size: 20px;
+  }
+
+  /* Form */
+  .form-group {
+    margin-bottom: 14px;
+  }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .form-label .required { color: var(--error); margin-left: 2px; }
+  .form-input, .form-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--line-c);
+    border-radius: 10px;
+    background: var(--bg);
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    transition: border 0.2s;
+  }
+  .form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--rose);
+    background: var(--paper);
+  }
+  .form-textarea { resize: vertical; min-height: 70px; }
+  .form-hint {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+  .form-error {
+    font-size: 11px;
+    color: var(--error);
+    margin-top: 4px;
+  }
+
+  /* Ship method readonly */
+  .ship-info {
+    background: var(--bg-alt);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .ship-info-name { font-size: 14px; font-weight: 500; }
+  .ship-info-fee { font-size: 12px; color: var(--ink-soft); }
+  .change-link {
+    color: var(--rose-deep);
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* Submit bar */
+  .submit-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--paper);
+    border-top: 1px solid var(--line-c);
+    padding: 14px 16px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+    z-index: 50;
+  }
+  .submit-bar-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .total-display { flex: 1; }
+  .total-display .label { font-size: 11px; color: var(--ink-soft); }
+  .total-display .amount {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--rose-deep);
+  }
+  .total-display .amount::before {
+    content: 'NT$';
+    font-size: 12px;
+    font-weight: 400;
+    margin-right: 2px;
+    vertical-align: 2px;
+  }
+  .submit-btn {
+    background: var(--rose);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    min-width: 130px;
+  }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Success state */
+  .success-state {
+    text-align: center;
+    background: var(--paper);
+    border-radius: 16px;
+    padding: 40px 24px;
+    box-shadow: var(--shadow);
+  }
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--rose-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+  }
+  .success-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .success-order-id {
+    font-family: 'SF Mono', Monaco, monospace;
+    background: var(--bg);
+    padding: 10px 16px;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 12px 0;
+    font-size: 13px;
+    color: var(--rose-deep);
+  }
+  .success-msg {
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.8;
+    margin: 16px 0;
+    text-align: left;
+    background: var(--rose-soft);
+    color: var(--rose-deep);
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .success-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+  }
+  .btn-line, .btn-back {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-line { background: #06C755; color: white; }
+  .btn-back { background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <button class="back-btn" onclick="history.back()">‹ 返回</button>
+    <span class="title">結 帳</span>
+    <span class="spacer"></span>
+  </div>
+</header>
+
+<div class="container" id="container"></div>
+
+<div class="submit-bar" id="submitBar">
+  <div class="submit-bar-inner">
+    <div class="total-display">
+      <div class="label">應付金額</div>
+      <div class="amount" id="finalAmount">0</div>
+    </div>
+    <button class="submit-btn" id="submitBtn" onclick="submitOrder()">送 出 訂 單</button>
+  </div>
+</div>
+
+<script>
+  const SHIP_OPTIONS = [
+    { id: 'pickup', name: '店面自取', fee: 0,  free: 0,    needAddress: false },
+    { id: 'home',   name: '宅配新竹', fee: 80, free: 1000, needAddress: true  },
+    { id: '711',    name: '7-11取貨', fee: 38, free: 600,  needAddress: true  },
+    { id: 'fami',   name: '全家取貨', fee: 35, free: 600,  needAddress: true  },
+  ];
+
+  function getCart() {
+    try { return JSON.parse(localStorage.getItem('mimi_cart') || '[]'); }
+    catch (e) { return []; }
+  }
+  function getShipMethod() { return localStorage.getItem('mimi_ship') || 'pickup'; }
+  function calcShipFee(subtotal, methodId) {
+    const opt = SHIP_OPTIONS.find(s => s.id === methodId) || SHIP_OPTIONS[0];
+    if (opt.free && subtotal >= opt.free) return 0;
+    return opt.fee;
+  }
+
+  let subtotal = 0;
+  let shipFee = 0;
+  let total = 0;
+
+  function render() {
+    const container = document.getElementById('container');
+    const cart = getCart();
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="success-state">
+          <div class="success-msg">購物車是空的，無法結帳</div>
+          <button class="btn-back" onclick="location.href='/shop'">返回商品館</button>
+        </div>
+      `;
+      document.getElementById('submitBar').style.display = 'none';
+      return;
+    }
+
+    const shipMethodId = getShipMethod();
+    const shipMethod = SHIP_OPTIONS.find(s => s.id === shipMethodId) || SHIP_OPTIONS[0];
+
+    subtotal = 0;
+    let itemsHtml = '';
+    cart.forEach(item => {
+      const lineTotal = item.price * item.qty;
+      subtotal += lineTotal;
+      const imgUrl = item.imageUrl ? `/api/imgproxy?url=${encodeURIComponent(item.imageUrl)}` : '';
+      itemsHtml += `
+        <div class="order-item">
+          <img class="order-item-img" src="${imgUrl}" alt="">
+          <div class="order-item-info">
+            <div class="order-item-name">${item.name}</div>
+            <div class="order-item-meta">${item.size} × ${item.qty}</div>
+          </div>
+          <div class="order-item-price">$${lineTotal}</div>
+        </div>
+      `;
+    });
+
+    shipFee = calcShipFee(subtotal, shipMethodId);
+    total = subtotal + shipFee;
+
+    const addressFieldHtml = shipMethod.needAddress ? `
+      <div class="form-group">
+        <label class="form-label">${shipMethod.id === 'home' ? '收件地址' : '取貨門市/地址'}<span class="required">*</span></label>
+        <textarea class="form-textarea" id="address" placeholder="${shipMethod.id === 'home' ? '請填寫完整收件地址（含郵遞區號）' : '請填寫指定的 7-11 / 全家門市名稱與地址'}"></textarea>
+      </div>
+    ` : '';
+
+    container.innerHTML = `
+      <div class="panel">
+        <div class="panel-title">訂單明細</div>
+        ${itemsHtml}
+        <div class="summary-rows">
+          <div class="summary-row"><span>商品小計</span><span>$${subtotal}</span></div>
+          <div class="summary-row"><span>運費</span><span>${shipFee === 0 ? '免運' : '$' + shipFee}</span></div>
+          <div class="summary-row total"><span>合計</span><span>${total}</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">運送方式</div>
+        <div class="ship-info">
+          <div>
+            <div class="ship-info-name">${shipMethod.name}</div>
+            <div class="ship-info-fee">${shipFee === 0 ? '免運' : '運費 $' + shipFee}</div>
+          </div>
+          <span class="change-link" onclick="location.href='/cart'">變更</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">收件資訊</div>
+        <div class="form-group">
+          <label class="form-label">姓名<span class="required">*</span></label>
+          <input class="form-input" type="text" id="name" placeholder="收件人姓名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">手機<span class="required">*</span></label>
+          <input class="form-input" type="tel" id="phone" placeholder="09xx-xxx-xxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">LINE ID<span class="required">*</span></label>
+          <input class="form-input" type="text" id="lineId" placeholder="您的 LINE ID（用於通知出貨）">
+          <div class="form-hint">會用 LINE 通知您匯款帳號與出貨進度</div>
+        </div>
+        ${addressFieldHtml}
+        <div class="form-group">
+          <label class="form-label">備註</label>
+          <textarea class="form-textarea" id="note" placeholder="特殊需求或補充說明（非必填）"></textarea>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('finalAmount').textContent = total;
+
+    // 自動帶入上次填的資料
+    try {
+      const last = JSON.parse(localStorage.getItem('mimi_last_buyer') || '{}');
+      if (last.name) document.getElementById('name').value = last.name;
+      if (last.phone) document.getElementById('phone').value = last.phone;
+      if (last.lineId) document.getElementById('lineId').value = last.lineId;
+      if (last.address && document.getElementById('address')) document.getElementById('address').value = last.address;
+    } catch (e) {}
+  }
+
+  async function submitOrder() {
+    const cart = getCart();
+    if (cart.length === 0) return;
+
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const lineId = document.getElementById('lineId').value.trim();
+    const addressEl = document.getElementById('address');
+    const address = addressEl ? addressEl.value.trim() : '';
+    const note = document.getElementById('note').value.trim();
+    const shipMethodId = getShipMethod();
+    const shipMethod = SHIP_OPTIONS.find(s => s.id === shipMethodId);
+
+    // 驗證
+    if (!name) { alert('請填寫姓名'); document.getElementById('name').focus(); return; }
+    if (!phone) { alert('請填寫手機'); document.getElementById('phone').focus(); return; }
+    if (!lineId) { alert('請填寫 LINE ID'); document.getElementById('lineId').focus(); return; }
+    if (shipMethod.needAddress && !address) { alert('請填寫地址或取貨門市'); addressEl.focus(); return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '送出中⋯';
+
+    // 暫存買家資料供下次自動帶入
+    localStorage.setItem('mimi_last_buyer', JSON.stringify({ name, phone, lineId, address }));
+
+    const orderData = {
+      buyer: { name, phone, lineId, address, note },
+      shipping: {
+        method: shipMethod.id,
+        methodName: shipMethod.name,
+        fee: shipFee
+      },
+      items: cart,
+      subtotal,
+      shipFee,
+      total
+    };
+
+    try {
+      const res = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'submit failed');
+
+      // 清空購物車
+      localStorage.removeItem('mimi_cart');
+      showSuccess(result.orderId);
+    } catch (e) {
+      alert('訂單送出失敗，請稍後再試或私訊 LINE @hellomimi\n錯誤：' + e.message);
+      btn.disabled = false;
+      btn.textContent = '送 出 訂 單';
+    }
+  }
+
+  function showSuccess(orderId) {
+    document.getElementById('submitBar').style.display = 'none';
+    document.getElementById('container').innerHTML = `
+      <div class="success-state">
+        <div class="success-icon">✓</div>
+        <div class="success-title">訂單成立</div>
+        <div class="success-order-id">${orderId}</div>
+        <div class="success-msg">
+          ✦ 已收到您的訂單，米米會盡快透過 LINE 與您聯繫匯款帳號<br>
+          ✦ 完成匯款後 1-3 個工作天內出貨<br>
+          ✦ 任何問題請加 LINE @hellomimi 詢問
+        </div>
+        <div class="success-actions">
+          <a class="btn-line" href="https://line.me/R/ti/p/@hellomimi" target="_blank">加 LINE 客服</a>
+          <button class="btn-back" onclick="location.href='/shop'">繼續逛逛</button>
+        </div>
+      </div>
+    `;
+  }
+
+  render();
+</script>
+
+</body>
+</html>

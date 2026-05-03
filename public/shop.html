@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哈摟米米童著 ｜ 商品館</title>
+<meta property="og:title" content="哈摟米米童著">
+<meta property="og:description" content="台中北屯童裝專賣．現貨．預購．全館滿額免運">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f1;
+    --bg-alt: #f3ece2;
+    --paper: #ffffff;
+    --ink: #2a221d;
+    --ink-soft: #6b5a4f;
+    --rose: #c9847a;
+    --rose-deep: #a8625a;
+    --rose-soft: #f3d9d3;
+    --line-c: #e8ddd0;
+    --shadow: 0 4px 24px rgba(168, 98, 90, 0.08);
+    --shadow-hover: 0 8px 32px rgba(168, 98, 90, 0.16);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; }
+
+  /* Header */
+  .header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line-c);
+    padding: 18px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.02);
+  }
+  .header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .brand-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--ink);
+    letter-spacing: 1px;
+  }
+  .brand-en {
+    font-size: 11px;
+    color: var(--rose);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .cart-btn {
+    position: relative;
+    background: var(--rose);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .cart-btn:hover { background: var(--rose-deep); }
+  .cart-badge {
+    background: white;
+    color: var(--rose-deep);
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, var(--rose-soft) 0%, var(--bg-alt) 100%);
+    padding: 40px 16px 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--line-c);
+  }
+  .hero-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+  .hero-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 2px;
+  }
+  .hero-badges {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    background: var(--paper);
+    border: 1px solid var(--rose-soft);
+    color: var(--rose-deep);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  /* Search & Filter */
+  .controls {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 16px 0;
+  }
+  .search-box {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: 1px solid var(--line-c);
+    border-radius: 12px;
+    background: var(--paper);
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    transition: border 0.2s;
+  }
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--rose);
+  }
+  .search-box::before {
+    content: '🔍';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: 0.5;
+  }
+  .cat-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    background: var(--paper);
+    border: 1px solid var(--line-c);
+    color: var(--ink-soft);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .cat-tab:hover { border-color: var(--rose); color: var(--rose-deep); }
+  .cat-tab.active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  /* Grid */
+  .grid-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 16px 80px;
+  }
+  .stats-bar {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+  @media (min-width: 960px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 20px; } }
+  @media (min-width: 1200px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+
+  .card {
+    background: var(--paper);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:active { transform: scale(0.98); }
+  @media (hover: hover) {
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  }
+  .card-img-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    background: var(--bg-alt);
+    overflow: hidden;
+  }
+  .card-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .card-cat {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    color: var(--rose-deep);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+  .card-info {
+    padding: 10px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .card-name {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 36px;
+  }
+  .card-code {
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+    font-family: 'SF Mono', Monaco, monospace;
+  }
+  .card-price {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 17px;
+    color: var(--rose-deep);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .card-price::before {
+    content: 'NT$';
+    font-size: 11px;
+    font-weight: 400;
+    margin-right: 2px;
+  }
+
+  /* Loading & Empty */
+  .loading, .empty {
+    text-align: center;
+    padding: 80px 16px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  .loading::after {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--rose);
+    margin-left: 6px;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* Footer info bar */
+  .info-bar {
+    background: var(--ink);
+    color: rgba(255,255,255,0.85);
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+  }
+  .info-bar strong { color: var(--rose-soft); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-zh">哈摟米米童著</span>
+      <span class="brand-en">Hello MiMi</span>
+    </div>
+    <button class="cart-btn" onclick="location.href='/cart'">
+      <span>🛒 購物車</span>
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <h1 class="hero-title">商 品 館</h1>
+  <p class="hero-sub">每一件都是用心選的</p>
+  <div class="hero-badges">
+    <span class="badge">滿$600 超商免運</span>
+    <span class="badge">滿$1000 宅配免運</span>
+    <span class="badge">台中北屯自取</span>
+  </div>
+</section>
+
+<div class="controls">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜尋商品名稱、貨號⋯">
+  </div>
+  <div class="cat-tabs" id="catTabs">
+    <button class="cat-tab active" data-cat="">全部</button>
+  </div>
+</div>
+
+<div class="grid-wrap">
+  <div class="stats-bar" id="statsBar">載入中⋯</div>
+  <div class="grid" id="grid"></div>
+  <div class="loading" id="loading">商品載入中</div>
+  <div class="empty" id="empty" style="display:none;">沒有符合的商品</div>
+</div>
+
+<div class="info-bar">
+  <strong>哈摟米米童著</strong> · 台中市北屯區東光路850號1樓<br>
+  LINE @hellomimi · 客服時間 11:00–20:00
+</div>
+
+<script>
+  let allProducts = [];
+  let currentCat = '';
+  let currentSearch = '';
+
+  // 從現有 API 取得商品（沿用 /api/products 端點，需在 server.js 新增）
+  async function loadProducts() {
+    try {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      allProducts = (data.products || []).filter(p => p.name && p.price);
+      buildCategoryTabs();
+      render();
+    } catch (e) {
+      document.getElementById('loading').textContent = '商品載入失敗，請重新整理頁面';
+      console.error(e);
+    }
+  }
+
+  function buildCategoryTabs() {
+    // 合併編號變體：男寶上衣-2、男寶上衣-4 → 男寶上衣
+    const catSet = new Set();
+    allProducts.forEach(p => {
+      if (p.cat) {
+        const clean = p.cat.replace(/-\d+$/, '').trim();
+        if (clean) catSet.add(clean);
+      }
+    });
+    const tabs = document.getElementById('catTabs');
+    [...catSet].sort().forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'cat-tab';
+      btn.dataset.cat = cat;
+      btn.textContent = cat;
+      btn.onclick = () => {
+        document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        currentCat = cat;
+        render();
+      };
+      tabs.appendChild(btn);
+    });
+    // 全部按鈕
+    document.querySelector('.cat-tab[data-cat=""]').onclick = () => {
+      document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.cat-tab[data-cat=""]').classList.add('active');
+      currentCat = '';
+      render();
+    };
+  }
+
+  function render() {
+    const grid = document.getElementById('grid');
+    const loading = document.getElementById('loading');
+    const empty = document.getElementById('empty');
+    const stats = document.getElementById('statsBar');
+    loading.style.display = 'none';
+
+    let filtered = allProducts;
+    if (currentCat) {
+      filtered = filtered.filter(p => {
+        const clean = (p.cat || '').replace(/-\d+$/, '').trim();
+        return clean === currentCat;
+      });
+    }
+    if (currentSearch) {
+      const kw = currentSearch.toLowerCase();
+      filtered = filtered.filter(p =>
+        (p.name || '').toLowerCase().includes(kw) ||
+        (p.barcode || '').toLowerCase().includes(kw)
+      );
+    }
+
+    stats.textContent = `共 ${filtered.length} 件商品`;
+    grid.innerHTML = '';
+    empty.style.display = filtered.length === 0 ? 'block' : 'none';
+
+    filtered.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.onclick = () => location.href = `/shop/${encodeURIComponent(p.barcode)}`;
+      const imgUrl = p.imageUrl ? `/api/imgproxy?url=${encodeURIComponent(p.imageUrl)}` : '';
+      const cleanCat = (p.cat || '').replace(/-\d+$/, '').trim();
+      card.innerHTML = `
+        <div class="card-img-wrap">
+          ${imgUrl ? `<img class="card-img" src="${imgUrl}" loading="lazy" alt="${p.name}">` : ''}
+          ${cleanCat ? `<span class="card-cat">${cleanCat}</span>` : ''}
+        </div>
+        <div class="card-info">
+          <div class="card-name">${p.name}</div>
+          <div class="card-code">${p.barcode}</div>
+          <div class="card-price">${p.price}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    currentSearch = e.target.value.trim();
+    render();
+  });
+
+  // 更新購物車數量徽章
+  function updateCartBadge() {
+    try {
+      const cart = JSON.parse(localStorage.getItem('mimi_cart') || '[]');
+      const count = cart.reduce((s, i) => s + (i.qty || 1), 0);
+      document.getElementById('cartBadge').textContent = count;
+    } catch (e) {
+      document.getElementById('cartBadge').textContent = '0';
+    }
+  }
+
+  loadProducts();
+  updateCartBadge();
+</script>
+
+</body>
+</html>
