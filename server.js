@@ -100,7 +100,7 @@ app.get('/order.html', async (req, res) => {
 
 // /shop → 商品列表頁
 app.get('/shop', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'shop.html'));
+  res.sendFile(path.join(__dirname, 'shop.html'));
 });
 
 // /shop/:code → 單一商品頁（含動態 OGP）
@@ -140,7 +140,7 @@ app.get('/shop/:code', async (req, res) => {
   }
 
   const pageUrl = `https://mimi-sender.zeabur.app/shop/${encodeURIComponent(code)}`;
-  const html = fs.readFileSync(path.join(__dirname, 'public', 'product.html'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, 'product.html'), 'utf8');
   const ogpTags = `
     <meta property="og:title" content="${escapeHtml(name)} ｜ 哈摟米米童著" />
     <meta property="og:description" content="${escapeHtml(description)}" />
@@ -155,12 +155,12 @@ app.get('/shop/:code', async (req, res) => {
 
 // /cart → 購物車頁
 app.get('/cart', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'cart.html'));
+  res.sendFile(path.join(__dirname, 'cart.html'));
 });
 
 // /checkout → 結帳頁
 app.get('/checkout', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'checkout.html'));
+  res.sendFile(path.join(__dirname, 'checkout.html'));
 });
 
 // HTML 轉義工具
@@ -239,12 +239,13 @@ app.post('/api/orders', async (req, res) => {
 
     // 寫入 Google Sheet（透過 Apps Script Web App）
     const sheetUrl = process.env.SHEET_WEBAPP_URL;
+    console.log(`[訂單 ${orderId}] 開始處理`);
+    console.log(`[訂單 ${orderId}] SHEET_WEBAPP_URL 設定狀態:`, sheetUrl ? '已設定' : '❌ 未設定');
+
     if (sheetUrl) {
-      await fetch(sheetUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'createOrder',  // 🆕 用 action 區分新舊訂單
+      try {
+        const sheetPayload = {
+          action: 'createOrder',
           orderId,
           timestamp: ts,
           buyer: orderData.buyer,
@@ -253,8 +254,23 @@ app.post('/api/orders', async (req, res) => {
           subtotal: orderData.subtotal,
           shipFee: orderData.shipFee,
           total: orderData.total
-        })
-      }).catch(e => console.error('寫入 Sheet 失敗:', e.message));
+        };
+        console.log(`[訂單 ${orderId}] 準備送出 payload:`, JSON.stringify(sheetPayload).slice(0, 200));
+
+        const sheetRes = await fetch(sheetUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(sheetPayload),
+          redirect: 'follow'  // 🆕 處理 Apps Script 的 302 重定向
+        });
+
+        console.log(`[訂單 ${orderId}] Apps Script 回應狀態:`, sheetRes.status);
+        const sheetText = await sheetRes.text();
+        console.log(`[訂單 ${orderId}] Apps Script 回應內容:`, sheetText.slice(0, 300));
+      } catch(e) {
+        console.error(`[訂單 ${orderId}] 寫入 Sheet 失敗:`, e.message);
+        console.error('完整錯誤:', e);
+      }
     }
 
     // 推播 LINE 通知米米
