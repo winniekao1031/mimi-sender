@@ -370,22 +370,51 @@
     }
   }
 
-  function parseSizes(sizesStr) {
-    // 解析尺寸字串，例如：「黑/M:5,L:3,XL:0」
-    if (!sizesStr) return [];
+  function parseSizes(sizeStr) {
+    // 解析尺寸字串，跟 order.html 一致的邏輯
+    // 格式：「灰:5/7/9 黑:5/7」或「9/13/15*2」或「9/13/15」
+    if (!sizeStr) return [];
     const items = [];
-    const lines = String(sizesStr).split(/[,\n]/);
-    lines.forEach(line => {
-      const t = line.trim();
-      if (!t) return;
-      const m = t.match(/^(.+?)[:：](\d+)$/);
-      if (m) {
-        items.push({ label: m[1].trim(), stock: parseInt(m[2], 10) });
-      } else {
-        items.push({ label: t, stock: null });
-      }
+
+    // 嘗試解析「顏色:尺寸/尺寸」格式
+    const colorPattern = /([^\s:、,\/]+):([0-9\/,、*\s]+)/g;
+    let match;
+    let hasColor = false;
+
+    while ((match = colorPattern.exec(sizeStr)) !== null) {
+      hasColor = true;
+      const color = match[1].trim();
+      const tokens = match[2].split(/[\/,、]/).map(s => s.trim()).filter(Boolean);
+      tokens.forEach(tok => {
+        const m = tok.match(/^(\d+)\*(\d+)$/);
+        if (m) {
+          items.push({ label: `${color} ${m[1]}`, stock: parseInt(m[2], 10) });
+        } else {
+          items.push({ label: `${color} ${tok}`, stock: null });
+        }
+      });
+    }
+
+    // 純數字/尺寸格式（無顏色）
+    if (!hasColor) {
+      const tokens = sizeStr.split(/[\/,、\s]/).map(s => s.trim()).filter(Boolean);
+      tokens.forEach(tok => {
+        const m = tok.match(/^(.+?)\*(\d+)$/);
+        if (m) {
+          items.push({ label: m[1].trim(), stock: parseInt(m[2], 10) });
+        } else {
+          items.push({ label: tok, stock: null });
+        }
+      });
+    }
+
+    // 去重（保留第一個出現的庫存資訊）
+    const seen = new Set();
+    return items.filter(it => {
+      if (seen.has(it.label)) return false;
+      seen.add(it.label);
+      return true;
     });
-    return items;
   }
 
   function renderProduct() {
